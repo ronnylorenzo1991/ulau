@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\NavController;
 use App\Http\Controllers\PermissionController;
@@ -30,6 +31,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 
 Route::middleware('auth:api')->post('/roles/toggle_permission/{id}', [RoleController::class, 'togglePermission']);
+
+Route::middleware('auth:api')->group(function () {
+    Route::get('/dashboard/anomalies/class', [DashboardController::class, 'anomaliesByClass']);
+    Route::get('/dashboard/events/totals', [DashboardController::class, 'eventTotals']);
+    Route::get('/dashboard/events/images', [DashboardController::class, 'eventImages']);
+});
 
 Route::middleware('auth:api')->group(function () {
     Route::resources([

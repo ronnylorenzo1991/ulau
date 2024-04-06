@@ -29,6 +29,10 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\File;
 
+function get_labels_by($getBy) {
+    $labels = ['week' =>['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']];
+    return $labels[$getBy];
+}
 function is_array_fill($array)
 {
     return is_array($array) && count($array);

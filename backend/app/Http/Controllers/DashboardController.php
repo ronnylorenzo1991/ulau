@@ -4,96 +4,77 @@ namespace App\Http\Controllers;
 
 use App\Models\Module;
 use App\Repositories\Anomaly\AnomalyRepository;
-use App\Repositories\AnomalyStatus\AnomalyStatusRepository;
-use App\Repositories\AnomalyType\AnomalyTypeRepository;
-use App\Repositories\Area\AreaRepository;
-use App\Repositories\Cage\CageRepository;
-use App\Repositories\Center\CenterRepository;
-use App\Repositories\Company\CompanyRepository;
-use App\Repositories\Customer\CustomerRepository;
-use App\Repositories\Module\ModuleRepository;
-use App\Repositories\Orientation\OrientationRepository;
-use App\Repositories\Part\PartRepository;
-use App\Repositories\RcaReason\RcaReasonRepository;
-use App\Repositories\Rov\RovRepository;
-use App\Repositories\Service\ServiceRepository;
-use App\Repositories\WorkOrder\WorkOrderRepository;
+use App\Repositories\Event\EventRepository;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     private AnomalyRepository $anomalyRepository;
-    private AreaRepository $areaRepository;
-    private CompanyRepository $companyRepository;
-    private CenterRepository $centerRepository;
-    private ModuleRepository $modulesRepository;
-    private CageRepository $cageRepository;
-    private PartRepository $partRepository;
-    private ServiceRepository $serviceRepository;
-    private OrientationRepository $orientationRepository;
-    private CustomerRepository $customerRepository;
-    private RcaReasonRepository $rcaReasonRepository;
-    private RovRepository $rovsRepository;
-    private AnomalyStatusRepository $anomalyStatusRepository;
-    private AnomalyTypeRepository $anomalyTypeRepository;
-    private WorkOrderRepository $workOrderRepository;
+    private EventRepository $eventRepository;
 
     public function __construct(
-        AreaRepository $areaRepository,
-        CompanyRepository $companyRepository,
-        CenterRepository $centerRepository,
-        ModuleRepository $modulesRepository,
-        CageRepository $cageRepository,
-        PartRepository $partRepository,
-        ServiceRepository $serviceRepository,
-        OrientationRepository $orientationRepository,
-        CustomerRepository $customerRepository,
-        RcaReasonRepository $rcaReasonRepository,
-        RovRepository $rovsRepository,
-        AnomalyStatusRepository $anomalyStatusRepository,
-        AnomalyTypeRepository $anomalyTypeRepository,
-        WorkOrderRepository $workOrderRepository,
         AnomalyRepository $anomalyRepository,
+        EventRepository $eventRepository,
     ) {
-        $this->anomalyRepository       = $anomalyRepository;
-        $this->areaRepository          = $areaRepository;
-        $this->companyRepository       = $companyRepository;
-        $this->centerRepository        = $centerRepository;
-        $this->modulesRepository       = $modulesRepository;
-        $this->cageRepository          = $cageRepository;
-        $this->partRepository          = $partRepository;
-        $this->serviceRepository       = $serviceRepository;
-        $this->orientationRepository   = $orientationRepository;
-        $this->customerRepository      = $customerRepository;
-        $this->rcaReasonRepository     = $rcaReasonRepository;
-        $this->rovsRepository          = $rovsRepository;
-        $this->anomalyStatusRepository = $anomalyStatusRepository;
-        $this->anomalyTypeRepository   = $anomalyTypeRepository;
-        $this->workOrderRepository     = $workOrderRepository;
+        $this->anomalyRepository = $anomalyRepository;
+        $this->eventRepository   = $eventRepository;
     }
 
-    public function anomaliesByParts(Request $request)
+    public function eventImages(Request $request)
     {
         try {
-            $filters = $request->only([
-                'center',
-            ]);
+            $last = $request->get('last', 10);
+            $images = $this->eventRepository->getEventsLastImages($last);
+            return response()->json([
+                'success' => true,
+                'images'  => array_values($images),
+                'message' => 'Datos cargados con éxito',
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::info($e->getMessage());
 
-            $anomalies  = $this->anomalyRepository->getAnomaliesByParts($filters);
-            $labels     = [];
-            $quantities = [];
-
-            foreach ($anomalies as $anomaly) {
-                $labels[]     = $anomaly->name;
-                $quantities[] = $anomaly->quantity;
+            return response()->json([
+                'message' => 'Hubo un problema al cargar los datos',
+            ], 422);
+        }
+    }
+    public function eventTotals(Request $request)
+    {
+        try {
+            $getBy      = $request->get('by', 'week');
+            $labels     = get_labels_by($getBy);
+            $weeKTotals = array_fill(0, 7, 0);
+            $events     = $this->eventRepository->getEventsTotals($getBy);
+            foreach ($events as $eventCount) {
+                $weeKTotals[$eventCount['day']] = $eventCount['count'];
             }
 
             return response()->json([
-                'success'    => true,
-                'labels'     => $labels,
-                'quantities' => $quantities,
-                'message'    => 'Datos cargados con éxito',
+                'success' => true,
+                'labels'  => $labels,
+                'count'   => $weeKTotals,
+                'message' => 'Datos cargados con éxito',
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::info($e->getMessage());
+
+            return response()->json([
+                'message' => 'Hubo un problema al cargar los datos',
+            ], 422);
+        }
+    }
+
+    public function anomaliesByClass(Request $request)
+    {
+        try {
+            $anomalies = $this->anomalyRepository->getAnomaliesByClass();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $anomalies,
+                'message' => 'Datos cargados con éxito',
             ], 200);
         } catch (\Exception $e) {
             \Log::info($e->getMessage());
@@ -203,7 +184,7 @@ class DashboardController extends Controller
                 'center',
             ]);
             $datasets = [];
-            $centerId = !empty ($filters['center']) ? $filters['center'] : get_user_center_id();
+            $centerId = !empty($filters['center']) ? $filters['center'] : get_user_center_id();
             Module::where('center_id', $centerId)->get()->each(function ($module) use (&$datasets, $request, $filters) {
                 $anomalies  = $this->anomalyRepository->getAnomaliesCategoriesByModule(
                     $module->id,
