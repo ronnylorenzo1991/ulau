@@ -40,12 +40,13 @@ Route::middleware('auth:api')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     Route::resources([
-        'navs'                    => NavController::class,
-        'general_settings'        => GeneralSettingController::class,
-        'permissions'             => PermissionController::class,
-        'users'                   => UserController::class,
-        'roles'                   => RoleController::class,
-        'anomaly_types'           => AnomalyTypeController::class,
+        'navs'             => NavController::class,
+        'general_settings' => GeneralSettingController::class,
+        'permissions'      => PermissionController::class,
+        'users'            => UserController::class,
+        'roles'            => RoleController::class,
+        'anomaly_types'    => AnomalyTypeController::class,
+        'events'           => EventController::class,
     ]);
     Route::post('auth/password', [AuthController::class, 'changePassword'])->name('auth.change_password');
 });

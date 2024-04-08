@@ -1,0 +1,108 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const props = defineProps({
+  items: {
+    default: []
+  },
+  columns: {
+    default: []
+  },
+  links: {
+    default: Array
+  },
+  current_page: {
+    default: Number
+  },
+  prev_page: {
+    default: String
+  },
+  next_page: {
+    default: String
+  },
+  from: {
+    default: Number
+  },
+  to: {
+    default: Number
+  },
+  total: {
+    default: Number
+  },
+})
+</script>
+
+<template>
+  <div
+    class="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
+    <div class="max-w-full overflow-x-auto">
+      <table class="w-full table-auto">
+        <thead>
+          <tr class="bg-gray-2 text-left dark:bg-meta-4">
+            <th class="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11"
+              v-for="header in columns">
+              {{ header.text }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in items" :key="index">
+            <td class="py-5 px-4 pl-9 xl:pl-11" v-for="header in columns">
+              <div v-if="header.type == 'multiple'">
+                <p v-for="children in item[header.key]"
+                  class="inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium" :class="{
+                    'bg-warning text-warning': children[header.childrenKey] === 'Hematoma',
+                    'bg-danger text-danger': children[header.childrenKey] === 'Melanosis',
+                    'bg-success text-success': children[header.childrenKey] === 'Salmon',
+                    'bg-success text-secondary': children[header.childrenKey] === 'Salmon Inv',
+                  }">{{ children[header.childrenKey] }}</p>
+              </div>
+              <div v-else-if="header.type == 'image'">
+                <div class="flex items-center">
+                  <img :src="item[header.key]" alt="Image" width="60" class="rounded-full"
+                    @click="$emit('imageClicked', item)" />
+                </div>
+              </div>
+              <div v-else>
+                <p class="text-sm">{{ item[header.key] }}</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="py-5 flex flex-row" v-if="items.length">
+      <div class="w-1/2 px-2 text-md text-gray-500">
+        {{ from }} a {{ to }} de {{ total }}
+      </div>
+      <div class="w-1/2">
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px float-right" aria-label="Pagination">
+          <button v-for="link in links" aria-current="page" :disabled="!link.url"
+            @click="$emit('navigate', link.url)"
+            :class="`${link.active ? 'z-10 bg-primary shadow-default text-white' : 'bg-white dark:border-strokedark dark:bg-boxdark text-gray-500 hover:bg-gray-50'} relative inline-flex items-center px-4 py-2 border text-sm font-medium`">
+
+            <span v-if="link?.label?.includes('Anterior')">
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                aria-hidden="true">
+                <path fill-rule="evenodd"
+                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                  clip-rule="evenodd" />
+              </svg>
+            </span>
+
+            <svg v-if="link?.label?.includes('Siguiente')" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd" />
+            </svg>
+
+            <span v-if="!link?.label?.includes('Siguiente') && !link.label.includes('Anterior')">{{
+              link.label
+            }}</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
+</template>

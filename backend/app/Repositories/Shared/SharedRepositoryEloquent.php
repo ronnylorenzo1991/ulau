@@ -18,7 +18,7 @@ abstract class SharedRepositoryEloquent implements SharedRepositoryInterface
     {
         return $relationships != null
             ? $this->model->with($relationships)->orderBy($sortBy, $sortDir)->paginate($perPage, ['*'], 'page', $page)->toArray()
-            : $this->model->orderBy($sortBy, $sortDir)->paginate(10, ['*'], 'page', $page)->toArray();
+            : $this->model->orderBy($sortBy, $sortDir)->paginate($perPage, ['*'], 'page', $page)->toArray();
     }
 
     public function getList(): Collection

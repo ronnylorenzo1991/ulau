@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-// @ts-ignore
+import { ref, watch, nextTick } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 
 const props = defineProps({
   showMenuBar: {
     default: false
   },
-
+  series: {
+    default: [],
+  },
+  labels: {
+    default: [],
+  },
+  colors: {
+    default: ['#3C50E0', '#80CAEE'],
+  },
+  selectedMenuKey: {
+    default: '',
+  },
   menuOptions: {
     default: [
       {
@@ -24,23 +34,10 @@ const props = defineProps({
       }, 
     ],
   },
-  series: {
-    default: [],
-  },
-  labels: {
-    default: [],
-  },
-  colors: {
-    default: ['#3C50E0', '#80CAEE'],
-  },
-  selectedMenuKey: {
-    default: '',
-  },
 })
 
-
 const selectedOption = ref(props.selectedMenuKey)
-const chart = ref(null)
+const chart = ref()
 
 watch(() => props.selectedMenuKey, (newValue) => {
   selectedOption.value = newValue
@@ -150,10 +147,9 @@ const apexOptions = {
         fontSize: '0px'
       }
     },
-    min: 0,
-    max: 100
   }
 }
+
 </script>
 
 <template>

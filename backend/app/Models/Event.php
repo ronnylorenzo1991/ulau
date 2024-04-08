@@ -13,4 +13,9 @@ class Event extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = ['date_at', 'image_path'];
+
+    public function anomalies()
+    {
+        return $this->hasMany(Anomaly::class);
+    }
 }

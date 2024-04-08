@@ -13,29 +13,29 @@ const cardItems = ref([
     icon: 'eye',
     label: 'Melanosis',
     title: 'Melanosis',
-    total: '3.456K',
-    percent: 0.43
+    total: 0,
+    percent: 0
   },
   {
     icon: 'eye',
     title: 'Hematoma',
     label: 'Hematoma',
-    total: '45,2K',
-    percent: 4.35
+    total: 0,
+    percent: 0
   },
   {
     icon: 'eye',
     title: 'Gapping',
     label: 'Gapping',
-    total: '2.450',
-    percent: 2.59
+    total: 0,
+    percent: 0
   },
   {
     icon: 'eye',
     title: 'Filete Invertido',
     label: 'Salmon inv',
-    total: '3.456',
-    percent: -0.95
+    total: 0,
+    percent: 0
   }
 ])
 
