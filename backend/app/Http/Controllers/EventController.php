@@ -44,8 +44,8 @@ class EventController extends Controller
     public function store(Request $request)
     {
         try {
-            $file = $request->file('file');
-            $data = $request->get('params');
+            $file = $request->file('file') ?? null;
+            $data = $request->get('params') ?? null;
             $event = $this->eventRepository->store($data, $file);
 
             return json_encode(['event_id' => $event->id ?? null, 'message' => 'Evento procesado satisfactoriamente']);

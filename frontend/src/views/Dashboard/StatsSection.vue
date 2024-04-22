@@ -10,30 +10,51 @@ const config = reactive({
 
 const cardItems = ref([
   {
-    icon: 'eye',
+    icon: 'exclamation-triangle',
     label: 'Melanosis',
     title: 'Melanosis',
     total: 0,
     percent: 0
   },
   {
-    icon: 'eye',
+    icon: 'exclamation-circle',
     title: 'Hematoma',
     label: 'Hematoma',
     total: 0,
     percent: 0
   },
   {
-    icon: 'eye',
+    icon: 'drumstick-bite',
     title: 'Gapping',
     label: 'Gapping',
     total: 0,
     percent: 0
   },
   {
-    icon: 'eye',
-    title: 'Filete Invertido',
-    label: 'Salmon inv',
+    icon: 'heart-broken',
+    title: 'Cracking',
+    label: 'Cracking',
+    total: 0,
+    percent: 0
+  },
+  {
+    icon: 'fa-undo',
+    title: 'Invertidos',
+    label: 'Salmon Inv',
+    total: 0,
+    percent: 0
+  },
+  {
+    icon: 'fa-bolt',
+    title: 'Cicatriz',
+    label: 'Cicatriz',
+    total: 0,
+    percent: 0
+  },
+  {
+    icon: 'fish',
+    title: 'Total',
+    label: 'Salmon',
     total: 0,
     percent: 0
   }
@@ -58,6 +79,6 @@ const getAnomaliesByClass = async () => {
 
 <template>
   <!-- Card Item Start -->
-    <DataStatsComponent :title="item.title" :total="item.total" :icon="item.icon" :percent="item.percent" v-for="(item, index) in cardItems" :key="index"/>
+    <DataStatsComponent :title="item.title" :label="item.label" :total="item.total" :icon="item.icon" :percent="item.percent" v-for="(item, index) in cardItems" :key="index"/>
   <!-- Card Item End -->
 </template>

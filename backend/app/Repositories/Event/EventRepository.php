@@ -9,7 +9,6 @@ use App\Repositories\Shared\SharedRepositoryEloquent;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-
 class EventRepository extends SharedRepositoryEloquent
 {
     private Event $entity;
@@ -26,7 +25,7 @@ class EventRepository extends SharedRepositoryEloquent
     public function store($data, $file)
     {
         $params        = json_decode($data, true);
-        $anomaliesList = json_decode($params['metadata'], true);
+        $anomaliesList = json_decode($params['metadata'], true) ?? [];
 
         $event = Event::create([
             'date_at' => $params['date_at'],
@@ -47,7 +46,8 @@ class EventRepository extends SharedRepositoryEloquent
         return $event;
     }
 
-    public function getEventsLastImages($last) {
+    public function getEventsLastImages($last)
+    {
         return $this->entity->select('image_path')->orderBy('id', 'desc')->limit(10)->get()->pluck('image_path')->toArray();
     }
 
@@ -58,9 +58,9 @@ class EventRepository extends SharedRepositoryEloquent
             DB::raw('WEEKDAY(events.date_at) as day'),
             DB::raw("COUNT(events.id) as count"),
         )->whereBetween(
-                'date_at',
-                [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-            );
+            'date_at',
+            [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
+        );
 
         return $query->orderBy('day')
             ->groupBy(DB::raw('events.date_at'))

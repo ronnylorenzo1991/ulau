@@ -120,14 +120,24 @@ const showImageMap = () => {
   background.src = currentItem.value.image_path
 
   background.onload = () => {
+    const strokeColors = {
+      'Hematoma': '#FFA70B',
+      'Melanosis': '#D34053',
+      'Salmon Inv': '#219653',
+      'Salmon': '#219653',
+      'Cracking': '#219653',
+      'Gapping': '#219653',
+    }
+
     ctx.drawImage(background, 0, 0, 640, 480)
     setTimeout(() => {
       if (currentItem.value.anomalies) {
         currentItem.value.anomalies.forEach(anomaly => {
-            const coordinates = eval(anomaly.coordinates)
-            ctx.strokeStyle = '#FF0000'
-            ctx.strokeRect(coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[3] - coordinates[1])
-            ctx.stroke()
+          const coordinates = eval(anomaly.coordinates)
+          ctx.strokeStyle = strokeColors[anomaly.class_label]
+          ctx.lineWidth = 3;
+          ctx.strokeRect(coordinates[0], coordinates[1], coordinates[2] - coordinates[0], coordinates[3] - coordinates[1])
+          ctx.stroke()
         })
       }
     })
@@ -135,30 +145,31 @@ const showImageMap = () => {
 }
 
 const prepareTableData = async (response) => {
-    events.value = response.data.data
-    links.value = response.data.links
-    current_page.value = response.data.current_page
-    from.value = response.data.from
-    to.value = response.data.to
-    total.value = response.data.total
-    next_page.value = null
-    prev_page.value = null
+  events.value = response.data.data
+  links.value = response.data.links
+  current_page.value = response.data.current_page
+  from.value = response.data.from
+  to.value = response.data.to
+  total.value = response.data.total
+  next_page.value = null
+  prev_page.value = null
 }
 </script>
 
 <template>
   <DefaultLayout>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-7 2xl:gap-7.5">
       <StatsSection />
     </div>
 
     <div class="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
-      <LineChartComponent :labels="lineChartLabels" :series="lineChartSeries" v-if="lineChartLabels"/>
-      <CarouselComponent :images="images" />
-      <DonutChartComponent title="Resumen Anomalias" :labels="donutChartLabels" :series="donutChartSeries" v-if="donutChartLabels"/>
-      <TableComponent :items="events" :columns="eventColumns" @imageClicked="openImageModal" :links="links" @navigate="getAllEvents"
-      :current_page="current_page" :prev_page="prev_page"
-      :next_page="next_page" :from="from" :to="to" :total="total"/>
+      <LineChartComponent :labels="lineChartLabels" :series="lineChartSeries" v-if="lineChartLabels" />
+      <CarouselComponent :images="images" title="Últimas Capturas"/>
+      <DonutChartComponent title="Resumen Anomalias" :labels="donutChartLabels" :series="donutChartSeries"
+        v-if="donutChartLabels" />
+      <TableComponent :items="events" :columns="eventColumns" @imageClicked="openImageModal" :links="links"
+        @navigate="getAllEvents" :current_page="current_page" :prev_page="prev_page" :next_page="next_page" :from="from"
+        :to="to" :total="total" />
     </div>
     <ModalComponent v-if="showImageModal" :show="showImageModal" :hiddenAcceptButton="true" @cancel="closeImageModal"
       size="7">

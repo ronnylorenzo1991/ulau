@@ -5,6 +5,9 @@ const props = defineProps({
   items: {
     default: []
   },
+  colors: {
+    default:  {Gapping: '#FFA70B', Salmon: '#f47c70', Melanosis: '#D34053', Hematoma: '#e22e94', Cracking: '#ac5e17', Cicatriz: '#cbb79f', 'Salmon Inv': '#548f94'}
+  },
   columns: {
     default: []
   },
@@ -30,6 +33,21 @@ const props = defineProps({
     default: Number
   },
 })
+
+const getChildrenLabelsUniques = (childrens) => {
+  let arrayLabels = []
+  childrens.filter(item => {
+    if(!arrayLabels.includes(item.class_label)) {
+      arrayLabels.push(item.class_label)
+    }
+  })
+
+  return arrayLabels
+}
+
+const getColorClass = (label) => {
+  return `bg-[${props.colors[label]}] text-[${props.colors[label]}]`
+}
 </script>
 
 <template>
@@ -49,13 +67,8 @@ const props = defineProps({
           <tr v-for="(item, index) in items" :key="index">
             <td class="py-5 px-4 pl-9 xl:pl-11" v-for="header in columns">
               <div v-if="header.type == 'multiple'">
-                <p v-for="children in item[header.key]"
-                  class="inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium" :class="{
-                    'bg-warning text-warning': children[header.childrenKey] === 'Hematoma',
-                    'bg-danger text-danger': children[header.childrenKey] === 'Melanosis',
-                    'bg-success text-success': children[header.childrenKey] === 'Salmon',
-                    'bg-success text-secondary': children[header.childrenKey] === 'Salmon Inv',
-                  }">{{ children[header.childrenKey] }}</p>
+                <p v-for="label in getChildrenLabelsUniques(item[header.key])"
+                  class="inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium" :style="{backgroundColor: `${colors[label]}40`, color: colors[label]}">{{ label }}</p>
               </div>
               <div v-else-if="header.type == 'image'">
                 <div class="flex items-center">

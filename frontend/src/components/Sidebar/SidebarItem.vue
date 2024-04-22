@@ -32,7 +32,7 @@ const handleItemClick = () => {
         'bg-graydark dark:bg-meta-4': sidebarStore.page === item.label
       }"
     >
-      <span v-html="item.icon"></span>
+      <fa icon="area-chart"/>
 
       {{ item.label }}
 
