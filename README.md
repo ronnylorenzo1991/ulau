@@ -1,4 +1,4 @@
-# steak-salmon-analisys | Web module
+# steak-salmon-analysis | Web module
 ## Requirements
 - Node Package Manager >= 7.1 (`npm -v`)
 - NodeJS >= 14.15.4 (`node -v`)
