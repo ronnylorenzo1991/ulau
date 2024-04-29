@@ -15,12 +15,19 @@ const router = createRouter({
       component: () => import('../views/Dashboard/index.vue'),
       meta: { title: 'Dashboard' }
     },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/Settings/index.vue'),
+      meta: { title: 'Settings' }
+    },
   ],
 })
 
 const protected_routes = [
   'dashboard',
   'profile',
+  'settings',
 ]
 
 router.beforeEach((to, from, next) => {

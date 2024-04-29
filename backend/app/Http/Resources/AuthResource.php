@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\GeneralSetting;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class AuthResource extends JsonResource
@@ -19,8 +20,8 @@ class AuthResource extends JsonResource
             'email'       => $this->email,
             'roles'       => $this->getRoleNames(),
             'permissions' => $this->getAllPermissions(),
-            'navs'        => $this->navs,
             'center'      => $this->center,
+            'settings'    => GeneralSetting::all(),
         ];
     }
 }

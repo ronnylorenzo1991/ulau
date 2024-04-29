@@ -12,7 +12,7 @@ class Event extends Model implements HasMedia
     use HasFactory;
     use InteractsWithMedia;
 
-    protected $fillable = ['date_at', 'image_path'];
+    protected $fillable = ['date_at', 'image_path', 'ext_id'];
 
     public function anomalies()
     {

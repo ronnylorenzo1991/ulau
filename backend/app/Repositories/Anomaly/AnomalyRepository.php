@@ -25,25 +25,13 @@ class AnomalyRepository extends SharedRepositoryEloquent
             DB::raw('anomalies.class_label as label')
         );
         
-        if(!empty($filters['filterBy'])) {
-            if ($filters['filterBy'] === 'month') {
-                $query->whereBetween(
-                    'date_at',
-                    [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
-                );
-            }
-            if ($filters['filterBy'] === 'week') {
-                $query->whereBetween(
-                    'date_at',
-                    [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-                );
-            }
-            if ($filters['filterBy'] === 'today') {
-                $query->whereBetween(
-                    'date_at',
-                    [Carbon::now()->startOfDay(), Carbon::now()->endOfDay()],
-                );
-            }
+        if (!empty($filters['date'])) {
+            $filters['date'] = explode(',', $filters['date']);
+            $query->whereBetween('events.created_at', $filters['date']);
+        }
+
+        if (!empty($filters['class_label'])) {
+            $query->where('anomalies.class_label', $filters['class_label']);
         }
         
         return $query->groupBy('label')->get();

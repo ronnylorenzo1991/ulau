@@ -5,6 +5,9 @@ const props = defineProps({
   items: {
     default: []
   },
+  withActions: {
+    default: true
+  },
   colors: {
     default:  {Gapping: '#FFA70B', Salmon: '#f47c70', Melanosis: '#D34053', Hematoma: '#e22e94', Cracking: '#ac5e17', Cicatriz: '#cbb79f', 'Salmon Inv': '#548f94'}
   },
@@ -45,15 +48,13 @@ const getChildrenLabelsUniques = (childrens) => {
   return arrayLabels
 }
 
-const getColorClass = (label) => {
-  return `bg-[${props.colors[label]}] text-[${props.colors[label]}]`
-}
 </script>
 
 <template>
   <div
     class="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
     <div class="max-w-full overflow-x-auto">
+      
       <table class="w-full table-auto">
         <thead>
           <tr class="bg-gray-2 text-left dark:bg-meta-4">
@@ -61,6 +62,7 @@ const getColorClass = (label) => {
               v-for="header in columns">
               {{ header.text }}
             </th>
+            <th class="py-4 px-4 font-medium text-black dark:text-white" v-if="withActions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -78,6 +80,24 @@ const getColorClass = (label) => {
               </div>
               <div v-else>
                 <p class="text-sm">{{ item[header.key] }}</p>
+              </div>
+            </td>
+            <td>
+              <div class="flex items-center space-x-3.5">
+                <button class="hover:text-primary">
+                  <fa icon="pencil"></fa>
+                </button>
+                <button class="hover:text-primary">
+                  <fa icon="eye"></fa>
+                </button>
+
+                <button class="hover:text-primary">
+                  <fa icon="trash"></fa>
+                </button>
+
+                <button class="hover:text-primary">
+                  <fa icon="download"></fa>
+                </button>
               </div>
             </td>
           </tr>

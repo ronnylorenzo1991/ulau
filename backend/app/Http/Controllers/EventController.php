@@ -55,4 +55,22 @@ class EventController extends Controller
             return json_encode(['event_id' => null ?? null, 'message' => $e]);
         }
     }
+
+    public function updateByExternalId(Request $request)
+    {
+        try {
+            $file = $request->file('file') ?? null;
+            $data = $request->get('params') ?? [];
+            $params = json_decode($data, true);
+
+            $eventId = $this->eventRepository->getIdByField('ext_id', $params['ext_id']);
+            $this->eventRepository->update($eventId, $data, $file);
+
+            return json_encode(['event_id' => $eventId ?? null, 'message' => 'Evento procesado satisfactoriamente']);
+        } catch (\Exception $e) {
+            \Log::info($e);
+
+            return json_encode(['event_id' => null ?? null, 'message' => $e]);
+        }
+    }
 }

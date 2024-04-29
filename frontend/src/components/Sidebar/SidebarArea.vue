@@ -17,9 +17,19 @@ const menuGroups = ref([
     name: '',
     menuItems: [
       {
-        icon: 'chart',
+        icon: 'area-chart',
         label: 'Dashboard',
         route: '/',
+      },
+      {
+        icon: 'cog',
+        label: 'Opciones',
+        route: '#',
+        children: [{ 
+          icon: 'cogs',
+          label: 'Generales',
+          route: '/settings',
+        }]
       },
     ]
   }

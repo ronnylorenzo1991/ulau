@@ -26,7 +26,13 @@ class DashboardController extends Controller
     {
         try {
             $last = $request->get('last', 10);
-            $images = $this->eventRepository->getEventsLastImages($last);
+
+            $filters = $request->only([
+                'date',
+                'class_label',
+            ]);
+
+            $images = $this->eventRepository->getEventsLastImages($last, $filters);
             return response()->json([
                 'success' => true,
                 'images'  => array_values($images),
@@ -46,7 +52,13 @@ class DashboardController extends Controller
             $getBy      = $request->get('by', 'week');
             $labels     = get_labels_by($getBy);
             $weeKTotals = array_fill(0, 7, 0);
-            $events     = $this->eventRepository->getEventsTotals($getBy);
+           
+            $filters    = $request->only([
+                'date',
+                'class_label',
+            ]);
+
+            $events = $this->eventRepository->getEventsTotals($filters);
             foreach ($events as $eventCount) {
                 $weeKTotals[$eventCount['day']] = $eventCount['count'];
             }
@@ -69,21 +81,23 @@ class DashboardController extends Controller
     public function anomaliesByClass(Request $request)
     {
         try {
-            $filters = $request->only([
-                'filterBy',
+            $filters    = $request->only([
+                'date',
+                'class_label',
             ]);
-            $labels = [];
-            $series = [];
+            
+            $labels    = [];
+            $series    = [];
             $anomalies = $this->anomalyRepository->getAnomaliesByClass($filters);
-            foreach($anomalies as $anomaly) {
+            foreach ($anomalies as $anomaly) {
                 $labels[] = $anomaly->label;
                 $series[] = $anomaly->quantity;
             }
             return response()->json([
                 'success' => true,
-                'labels'    => $labels,
-                'series'    => $series,
-                'data'      => $anomalies,
+                'labels'  => $labels,
+                'series'  => $series,
+                'data'    => $anomalies,
                 'message' => 'Datos cargados con éxito',
             ], 200);
         } catch (\Exception $e) {

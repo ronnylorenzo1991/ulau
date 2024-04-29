@@ -26,6 +26,7 @@ const handleItemClick = (index: number) => {
             '!text-white': childItem.label === sidebarStore.selected
           }"
         >
+        <fa :icon="childItem.icon"/>
           {{ childItem.label }}
         </router-link>
       </li>

@@ -11,4 +11,7 @@ class GeneralSetting extends Model
 
     protected $fillable = ['name', 'description', 'value', 'active'];
 
+    protected $casts = [
+        'value' => 'array'
+    ];
 }

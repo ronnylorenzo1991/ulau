@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\NavController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -21,6 +20,7 @@ Route::post('reset', [AuthController::class, 'reset']);
 
 Route::middleware(['api'])->group(function () {
     Route::post('/events/create', [EventController::class, 'store'])->withoutMiddleware("throttle:api");
+    Route::post('/events/updateByExternalId', [EventController::class, 'updateByExternalId'])->withoutMiddleware("throttle:api");
 });
 
 Route::middleware('auth:api')->get('/lists', [DefaultController::class, 'getLists'])
@@ -40,7 +40,6 @@ Route::middleware('auth:api')->group(function () {
 
 Route::middleware('auth:api')->group(function () {
     Route::resources([
-        'navs'             => NavController::class,
         'general_settings' => GeneralSettingController::class,
         'permissions'      => PermissionController::class,
         'users'            => UserController::class,

@@ -2,18 +2,19 @@
 import StatsSection from './StatsSection.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import LineChartComponent from '../../components/Charts/LineChartComponent.vue'
-import { ref, reactive, onMounted, nextTick } from 'vue'
+import { ref, reactive, onMounted, nextTick, computed } from 'vue'
 import { authStore } from '@/stores/auth'
 import CarouselComponent from '../../components/Ui/CarouselComponent.vue'
 import DonutChartComponent from '../../components/Charts/DonutChartComponent.vue'
-import TableThree from '../../components/Tables/TableThree.vue'
 import TableComponent from '../../components/Tables/TableComponent.vue'
 import ModalComponent from '../../components/Ui/ModalComponent.vue'
+import BreadcrumbDefault from '@/components/Breadcrumbs/BreadcrumbDefault.vue'
+const pageTitle = ref('Dashboard')
 const auth_store = authStore()
 const config = reactive({
   headers: { Authorization: auth_store.token }
 })
-
+const activeClassesCount = ref()
 const currentItem = ref([])
 const events = ref([])
 const links = ref()
@@ -24,6 +25,10 @@ const next_page = ref()
 const prev_page = ref()
 const current_page = ref()
 const eventColumns = ref([
+  {
+    key: 'id',
+    text: 'Id',
+  },
   {
     key: 'date_at',
     text: 'fecha',
@@ -47,14 +52,14 @@ const donutChartSeries = ref()
 const donutChartLabels = ref()
 const images = ref()
 const filters = ref({
+  class_label: null,
+  date: null,
   donutChartRange: 'day'
 })
+activeClassesCount.value = auth_store.active_classes.length
 
 onMounted(async () => {
-  getEventTotals()
-  getEventImages()
-  getAnomaliesByClass()
-  getAllEvents()
+  reloadDashboard()
 })
 
 const closeImageModal = () => {
@@ -71,7 +76,7 @@ const openImageModal = (item) => {
 
 const getEventTotals = async () => {
   let url = `${auth_store.api}/dashboard/events/totals?by=week`
-  await axios.get(url, config).then(response => {
+  await axios.get(applyFilters(url), config).then(response => {
     lineChartSeries.value = [{
       name: 'Eventos',
       data: response.data.count
@@ -84,7 +89,7 @@ const getEventTotals = async () => {
 
 const getEventImages = async () => {
   let url = `${auth_store.api}/dashboard/events/images?last=10`
-  await axios.get(url, config).then(response => {
+  await axios.get(applyFilters(url), config).then(response => {
     images.value = response.data.images
   }).catch(e => {
     console.log(e)
@@ -92,8 +97,8 @@ const getEventImages = async () => {
 }
 
 const getAnomaliesByClass = async () => {
-  let url = `${auth_store.api}/dashboard/anomalies/class?filterBy=${filters.value.donutChartRange}`
-  await axios.get(url, config).then(response => {
+  let url = `${auth_store.api}/dashboard/anomalies/class`
+  await axios.get(applyFilters(url), config).then(response => {
     donutChartLabels.value = response.data.labels
     donutChartSeries.value = response.data.series
   }).catch(e => {
@@ -103,7 +108,7 @@ const getAnomaliesByClass = async () => {
 
 const getAllEvents = async (link = null) => {
   let url = link ? `${link}&per_page=5` : `${auth_store.api}/events?per_page=5`
-  await axios.get(url, config).then(response => {
+  await axios.get(applyFilters(url), config).then(response => {
     prepareTableData(response.data)
   }).catch(e => {
     console.log(e)
@@ -154,12 +159,44 @@ const prepareTableData = async (response) => {
   next_page.value = null
   prev_page.value = null
 }
+
+const applyFilters = (url) => {
+  url = !url.includes('?') ? url+'?' : url
+ 
+  Object.keys(filters.value).forEach(item => {
+        if (filters.value[item] !== null) {
+          url += `&${item}=${filters.value[item] || ''}`
+        }
+    })
+
+    return url
+}
+
+const reloadDashboard = () => {
+  getEventTotals()
+  getEventImages()
+  getAnomaliesByClass()
+  getAllEvents()
+} 
+
+const addFilter = (filter) => {
+  filters.value.class_label = filter
+  reloadDashboard()
+}
+
+const getStatsResponsiveClass = computed(() => {
+  const staticClasses = 'grid grid-cols-1 gap-5 md:gap-6 2xl:gap-7.5 '
+  let sm = 'sm:grid-cols-2 '
+  let md = 'md:grid-cols-' + auth_store.active_classes.length
+  return staticClasses + sm + md
+})
 </script>
 
 <template>
   <DefaultLayout>
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-7 2xl:gap-7.5">
-      <StatsSection />
+    <BreadcrumbDefault :pageTitle="pageTitle" />
+    <div :class="getStatsResponsiveClass">
+      <StatsSection @clicked="addFilter"/>
     </div>
 
     <div class="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
