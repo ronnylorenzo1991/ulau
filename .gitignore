@@ -1,0 +1,10 @@
+
+/backend/.env.example
+/backend/vendor
+/frontend/node_modules
+
+*.7z
+frontend/yarn.lock
+backend/config/cors.php
+backend/composer.lock
+backend/.rnd
