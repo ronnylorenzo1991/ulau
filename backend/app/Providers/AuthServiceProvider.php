@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <?php
 
 namespace App\Providers;
@@ -29,35 +28,3 @@ class AuthServiceProvider extends ServiceProvider
         //
     }
 }
-=======
-<?php
-
-namespace App\Providers;
-
-// use Illuminate\Support\Facades\Gate;
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-
-class AuthServiceProvider extends ServiceProvider
-{
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
-    protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
-    ];
-
-    /**
-     * Register any authentication / authorization services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->registerPolicies();
-
-        //
-    }
-}
->>>>>>> a3c01637b6f709fd5768c0d0dc67eaf8f51b56f6
