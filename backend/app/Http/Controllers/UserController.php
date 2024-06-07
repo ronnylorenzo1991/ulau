@@ -27,7 +27,7 @@ class UserController extends Controller
             $perPage = (int) $request->get('per_page');
             $page = (int) $request->get('page');
 
-            $users = $this->userRepository->getAll($sortBy, $sortDir, $perPage, $page, ['roles', 'center']);
+            $users = $this->userRepository->getAll($sortBy, $sortDir, $perPage, $page, ['roles']);
 
             return response()->json([
                 'success' => true,
@@ -69,6 +69,7 @@ class UserController extends Controller
 
     public function destroy($id)
     {
+        \Log::info($id);
         $this->userRepository->delete($id);
 
         return response()->json([

@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validatedData             = $request->validate([
-            'email'    => 'email|required|unique:users',
+            'phone'    => 'required|regex:/(01)[0-9]{9}/|unique:users',
             'password' => 'required',
             'name'     => 'required',
         ]);
@@ -33,12 +33,12 @@ class AuthController extends Controller
     {
         try {
             $request->validate([
-                "user_email" => "required",
+                "user_phone" => "required",
                 "password"   => "required",
             ]);
-            $field = filter_var($request->input('user_email'), FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-            $request->merge([$field => $request->input('user_email')]);
-            $user = User::where("email", $request->user_email)->orWhere('name', '=', $request->user_email)->first();
+            $field = filter_var($request->input('user_phone'), FILTER_SANITIZE_NUMBER_INT) ? 'phone' : 'name';
+            $request->merge([$field => $request->input('user_phone')]);
+            $user = User::where("phone", $request->user_phone)->orWhere('name', '=', $request->user_phone)->first();
             if (!Auth::attempt($request->only($field, 'password'))) {
                 return response()->json(['message' => __('auth.failed')], 401);
             }

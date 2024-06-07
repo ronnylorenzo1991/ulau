@@ -19,7 +19,7 @@ class RoleSeeder extends Seeder
             ['name' => 'desarrollo', 'permissions' => ['all']],
             ['name' => 'administrador', 'permissions' => ['all']],
             [
-                'name'        => 'supervisor',
+                'name'        => 'cliente',
                 'permissions' => [
                     'menu.dashboard',
                 ],

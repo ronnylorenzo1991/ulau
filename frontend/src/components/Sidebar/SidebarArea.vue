@@ -25,11 +25,23 @@ const menuGroups = ref([
         icon: 'cog',
         label: 'Opciones',
         route: '#',
-        children: [{ 
-          icon: 'cogs',
-          label: 'Generales',
-          route: '/settings',
-        }]
+        children: [
+          // {
+          //   icon: 'cogs',
+          //   label: 'Generales',
+          //   route: '/settings',
+          // },
+          {
+            icon: 'lock',
+            label: 'Roles',
+            route: '/roles',
+          },
+          {
+            icon: 'user',
+            label: 'Usuarios',
+            route: '/users',
+          },
+        ]
       },
     ]
   }
@@ -48,7 +60,7 @@ const menuGroups = ref([
       <router-link to="/">
         <div class="flex">
           <img src="@/assets/images/logo.png" alt="Logo" width="60" />
-          <p class="text-xl mb-2 my-3 px-5 font-bold text-white">PCGEEK</p>
+          <p class="text-xl mb-2 my-3 px-5 font-bold text-white">UÑAS LAURA</p>
         </div>
       </router-link>
 

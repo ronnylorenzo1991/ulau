@@ -10,7 +10,7 @@ const router = useRouter()
 const flashOption = ref({})
 const auth_store = authStore()
 
-const email = ref('')
+const phone = ref('')
 const password = ref('')
 
 const getFirstRouteWithPermission = () => {
@@ -41,7 +41,7 @@ async function login() {
   isLoading.value = true;
 
   const credentials = {
-    user_email: email.value,
+    user_phone: phone.value,
     password: password.value,
   }
   await axios.post(`${auth_store.api}/login`, credentials).then(response => {
@@ -64,11 +64,11 @@ async function login() {
 <template>
   <div class="my-36 mx-36">
     <DefaultAuthCard subtitle="Acceder al sistema" title="Ingrese Sus Credenciales">
-      <InputGroup label="Email" type="email" placeholder="Enter your email" v-model="email">
-        <fa icon="user"></fa>
+      <InputGroup label="Nombre de usuario o teléfono" placeholder="Nombre de usuario o teléfono" v-model="phone">
+        <fa icon="phone"></fa>
       </InputGroup>
 
-      <InputGroup label="Password" type="password" placeholder="6+ Characters, 1 Capital letter" v-model="password">
+      <InputGroup label="Contraseña" type="password" placeholder="Contraseña" v-model="password">
         <fa icon="lock"></fa>
       </InputGroup>
 

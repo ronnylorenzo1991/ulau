@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
 const props = defineProps({
   icon: {
@@ -27,11 +27,14 @@ const props = defineProps({
   <div
     class="rounded-sm border border-stroke bg-white py-6 px-5 shadow-default dark:border-strokedark dark:bg-boxdark">
     <div class="flex">
-      <div class="text-black text-lg dark:text-white">
+      <div class="text-black text-lg dark:text-white w-full">
         {{ title }}
       </div>
-       <div class="flex h-8 w-8 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 ml-auto" :style="{backgroundColor: `${labelsColors[label]}50`, color: labelsColors[label]}">
+       <div class="flex h-8 w-8 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 ml-auto" :style="{backgroundColor: `${labelsColors[label]}50`, color: labelsColors[label]}" v-if="!Array.isArray(icon)">
         <fa :icon="icon"/>
+      </div>
+      <div v-else v-for="ico in icon" class="flex h-8 w-8 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4 text-right -mr-3" :style="{backgroundColor: `${labelsColors[label]}50`, color: labelsColors[label]}">
+        <fa :icon="ico"/>
       </div>
     </div>
 

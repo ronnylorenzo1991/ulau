@@ -14,8 +14,12 @@ export async function error(message, errors = null) {
 export async function success(message) {
     return Swal.fire({
         icon: 'success',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: 'rgb(59, 130, 246)',
+        toast: true,
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
         title: 'Correcto',
         text: message ? message : 'Ejecución Satisfactoria',
     })
@@ -25,6 +29,7 @@ export function confirm(title, icon = 'warning', showCancelButton = true, confir
     return new Promise((resolve) => {
         Swal.fire({
             icon: icon,
+            toast: true,
             title: title,
             showCancelButton: showCancelButton,
             confirmButtonText: confirmButtonText,

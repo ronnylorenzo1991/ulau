@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Repositories\Anomaly\AnomalyRepository;
 use App\Repositories\Shared\SharedRepositoryEloquent;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class EventRepository extends SharedRepositoryEloquent
@@ -50,7 +51,7 @@ class EventRepository extends SharedRepositoryEloquent
     {
         $params        = json_decode($data, true);
         $anomaliesList = json_decode($params['metadata'], true) ?? [];
-        $event = Event::create([
+        $event         = Event::create([
             'date_at' => $params['date_at'],
             'ext_id'  => $params['ext_id'],
         ]);
@@ -74,8 +75,7 @@ class EventRepository extends SharedRepositoryEloquent
     {
         $params        = json_decode($data, true);
         $anomaliesList = json_decode($params['metadata'], true) ?? [];
-
-        $event = $this->find($id);
+        $event         = $this->find($id);
         $event->update([
             'date_at' => $params['date_at'],
             'ext_id'  => $params['ext_id'],
@@ -114,6 +114,52 @@ class EventRepository extends SharedRepositoryEloquent
         }
 
         return $query->orderBy('events.id', 'desc')->limit(10)->get()->pluck('image_path')->toArray();
+    }
+
+    public function getEventsByAnomaliesCombination($filters)
+    {
+        // Has hematoma gapping melanosis
+        $hmg = $this->entity->select(
+            DB::raw('COUNT(events.id) as data'),
+        )
+            ->whereRaw('(SELECT COUNT( DISTINCT( anomalies.class_label ) ) FROM anomalies WHERE anomalies.class_label in ("Hematoma", "Melanosis", "Gapping") and anomalies.event_id = events.id) = 3')->get();
+
+        // Has hematoma gapping 
+        $hg = $this->entity->select(
+            DB::raw('COUNT(events.id) as data'),
+        )
+            ->whereRaw('(SELECT COUNT( DISTINCT( anomalies.class_label ) ) FROM anomalies WHERE anomalies.class_label in ("Hematoma", "Gapping") and anomalies.event_id = events.id) = 2')->get();
+
+        // Has Hematoma melanosis
+        $hm = $this->entity->select(
+            DB::raw('COUNT(events.id) as data'),
+        )
+            ->whereRaw('(SELECT COUNT( DISTINCT( anomalies.class_label ) ) FROM anomalies WHERE anomalies.class_label in ("Melanosis", "Hematoma") and anomalies.event_id = events.id) = 2')->get();
+
+        // Has melanosis Gapping
+        $mg = $this->entity->select(
+            DB::raw('COUNT(events.id) as data'),
+        )
+            ->whereRaw('(SELECT COUNT( DISTINCT( anomalies.class_label ) ) FROM anomalies WHERE anomalies.class_label in ("Melanosis", "gapping") and anomalies.event_id = events.id) = 2')->get();
+
+        return [
+            [
+                'label' => 'Hematoma-Melanosis-Gapping',
+                'qty'   => $hmg[0]->data,
+            ],
+            [
+                'label' => 'Hematoma-Gapping',
+                'qty'   => $hg[0]->data,
+            ],
+            [
+                'label' => 'Hematoma-Melanosis',
+                'qty'   => $hm[0]->data,
+            ],
+            [
+                'label' => 'Melanosis-Gapping',
+                'qty'   => $mg[0]->data,
+            ],
+        ];
     }
 
     public function getEventsTotals($filters)

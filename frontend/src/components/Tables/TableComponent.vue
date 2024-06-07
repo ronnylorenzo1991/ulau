@@ -9,7 +9,7 @@ const props = defineProps({
     default: true
   },
   colors: {
-    default:  {Gapping: '#FFA70B', Salmon: '#f47c70', Melanosis: '#D34053', Hematoma: '#e22e94', Cracking: '#ac5e17', Cicatriz: '#cbb79f', 'Salmon Inv': '#548f94'}
+    default: { Gapping: '#FFA70B', Salmon: '#f47c70', Melanosis: '#D34053', Hematoma: '#e22e94', Cracking: '#ac5e17', Cicatriz: '#cbb79f', 'Salmon Inv': '#548f94' }
   },
   columns: {
     default: []
@@ -35,12 +35,20 @@ const props = defineProps({
   total: {
     default: Number
   },
+  actions: {
+    default: {
+      edit: true,
+      show: true,
+      delete: true,
+      downloadItem: true,
+    }
+  },
 })
 
 const getChildrenLabelsUniques = (childrens) => {
   let arrayLabels = []
   childrens.filter(item => {
-    if(!arrayLabels.includes(item.class_label)) {
+    if (!arrayLabels.includes(item.class_label)) {
       arrayLabels.push(item.class_label)
     }
   })
@@ -54,7 +62,10 @@ const getChildrenLabelsUniques = (childrens) => {
   <div
     class="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
     <div class="max-w-full overflow-x-auto">
-      
+      <div class="flex items-end my-5">
+        <slot name="table-menu">
+        </slot>
+      </div>
       <table class="w-full table-auto">
         <thead>
           <tr class="bg-gray-2 text-left dark:bg-meta-4">
@@ -70,7 +81,8 @@ const getChildrenLabelsUniques = (childrens) => {
             <td class="py-5 px-4 pl-9 xl:pl-11" v-for="header in columns">
               <div v-if="header.type == 'multiple'">
                 <p v-for="label in getChildrenLabelsUniques(item[header.key])"
-                  class="inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium" :style="{backgroundColor: `${colors[label]}40`, color: colors[label]}">{{ label }}</p>
+                  class="inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium"
+                  :style="{ backgroundColor: `${colors[label]}40`, color: colors[label] }">{{ label }}</p>
               </div>
               <div v-else-if="header.type == 'image'">
                 <div class="flex items-center">
@@ -83,22 +95,24 @@ const getChildrenLabelsUniques = (childrens) => {
               </div>
             </td>
             <td>
-              <div class="flex items-center space-x-3.5">
-                <button class="hover:text-primary">
-                  <fa icon="pencil"></fa>
-                </button>
-                <button class="hover:text-primary">
-                  <fa icon="eye"></fa>
-                </button>
-
-                <button class="hover:text-primary">
-                  <fa icon="trash"></fa>
-                </button>
-
-                <button class="hover:text-primary">
-                  <fa icon="download"></fa>
-                </button>
-              </div>
+              <slot name="actions">
+                <div class="flex items-center space-x-3.5">
+                  <button class="hover:text-primary" @click="$emit('edit', item)" v-show="actions.edit">
+                    <fa icon="pencil"></fa>
+                  </button>
+                  <button class="hover:text-primary" @click="$emit('show', item)" v-show="actions.show">
+                    <fa icon="eye"></fa>
+                  </button>
+  
+                  <button class="hover:text-primary" @click="$emit('delete', item)" v-show="actions.delete">
+                    <fa icon="trash"></fa>
+                  </button>
+  
+                  <button class="hover:text-primary" @click="$emit('download-item', item)" v-show="actions.downloadItem">
+                    <fa icon="download"></fa>
+                  </button>
+                </div>
+              </slot>
             </td>
           </tr>
         </tbody>
@@ -110,8 +124,7 @@ const getChildrenLabelsUniques = (childrens) => {
       </div>
       <div class="w-1/2">
         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px float-right" aria-label="Pagination">
-          <button v-for="link in links" aria-current="page" :disabled="!link.url"
-            @click="$emit('navigate', link.url)"
+          <button v-for="link in links" aria-current="page" :disabled="!link.url" @click="$emit('navigate', link.url)"
             :class="`${link.active ? 'z-10 bg-primary shadow-default text-white' : 'bg-white dark:border-strokedark dark:bg-boxdark text-gray-500 hover:bg-gray-50'} relative inline-flex items-center px-4 py-2 border text-sm font-medium`">
 
             <span v-if="link?.label?.includes('Anterior')">
@@ -132,7 +145,7 @@ const getChildrenLabelsUniques = (childrens) => {
 
             <span v-if="!link?.label?.includes('Siguiente') && !link.label.includes('Anterior')">{{
               link.label
-            }}</span>
+              }}</span>
           </button>
         </nav>
       </div>

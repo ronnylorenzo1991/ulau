@@ -22,7 +22,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = ['name', 'email', 'password', 'roles_id', 'center_id'];
+    protected $fillable = ['name', 'phone', 'password', 'roles_id'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -36,10 +36,7 @@ class User extends Authenticatable
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
-
+   
     public function getAllNavsAttribute()
     {
         $navs = Nav::with('navs')->whereHas('permissions', function ($query) {
@@ -70,10 +67,5 @@ class User extends Authenticatable
         });
 
         return $hasAdminPermissions->count() > 0;
-    }
-
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new ResetPassword($token, $this->getEmailForPasswordReset()));
     }
 }

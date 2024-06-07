@@ -21,6 +21,18 @@ const router = createRouter({
       component: () => import('../views/Settings/index.vue'),
       meta: { title: 'Settings' }
     },
+    {
+      path: '/roles',
+      name: 'roles',
+      component: () => import('../views/Roles/index.vue'),
+      meta: { title: 'Roles' }
+    },
+    {
+      path: '/users',
+      name: 'users',
+      component: () => import('../views/Users/index.vue'),
+      meta: { title: 'Usuarios' }
+    },
   ],
 })
 

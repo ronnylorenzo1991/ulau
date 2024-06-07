@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const currentDate = ref(new Date(2024, 12, 1))
+const currentDate = ref(new Date())
 
 const getDaysInMonth = (year: number, month: number): Date[] => {
   const date = new Date(year, month, 1)

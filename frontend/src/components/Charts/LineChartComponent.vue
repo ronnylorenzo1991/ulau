@@ -13,7 +13,7 @@ const props = defineProps({
     default: [],
   },
   colors: {
-    default: ['#3C50E0', '#80CAEE'],
+    default: ['green', 'yellow'],
   },
   selectedMenuKey: {
     default: '',
@@ -62,14 +62,6 @@ const apexOptions = {
     fontFamily: 'Satoshi, sans-serif',
     height: 335,
     type: 'area',
-    dropShadow: {
-      enabled: true,
-      color: '#623CEA14',
-      top: 10,
-      blur: 4,
-      left: 0,
-      opacity: 0.1
-    },
 
     toolbar: {
       show: false

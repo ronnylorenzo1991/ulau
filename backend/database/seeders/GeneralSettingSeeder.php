@@ -21,6 +21,12 @@ class GeneralSettingSeeder extends Seeder
                 'value'       => '["Salmon","Melanosis","Hematoma","Gapping","Salmon Inv"]',
                 'active'      => 1,
             ],
+            [
+                'name'        => 'combined_classes',
+                'description' => 'Clases Combinadas',
+                'value'       => '["Hematoma-Melanosis-Gapping","Hematoma-Gapping","Hematoma-Melanosis","Melanosis-Gapping"]',
+                'active'      => 1,
+            ],
         ];
 
         foreach ($settings as $setting) {

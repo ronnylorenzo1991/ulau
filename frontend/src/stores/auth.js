@@ -9,6 +9,7 @@ export const authStore = defineStore('auth', {
       api: '',
       user_settings: [],
       active_classes: [],
+      active_combined_classes: [],
       roles: [],
       permissions: [],
       user: Object,
@@ -47,6 +48,7 @@ export const authStore = defineStore('auth', {
       this.user_settings = data.user.settings
       this.permissions = data.user.permissions
       this.active_classes = JSON.parse(data.user.settings.find(item => item.name == 'active_classes').value)
+      this.active_combined_classes = JSON.parse(data.user.settings.find(item => item.name == 'combined_classes').value)
     },
     setApi() {
       this.api = import.meta.env.VITE_API_URL

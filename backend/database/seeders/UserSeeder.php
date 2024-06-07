@@ -20,9 +20,27 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'name'     => 'Desarrollo',
-                'email'    => 'desarrollo@pcgeek.cl',
+                'phone'    => '555550',
                 'password' => 'secret',
                 'roles'    => ['desarrollo'],
+            ],
+            [
+                'name'     => 'Fulanita',
+                'phone'    => '555551',
+                'password' => 'secret',
+                'roles'    => ['cliente'],
+            ],
+            [
+                'name'     => 'Menganita',
+                'phone'    => '555552',
+                'password' => 'secret',
+                'roles'    => ['cliente'],
+            ],
+            [
+                'name'     => 'Siclaneja',
+                'phone'    => '555553',
+                'password' => 'secret',
+                'roles'    => ['cliente'],
             ],
         ];
 
@@ -31,7 +49,7 @@ class UserSeeder extends Seeder
             if (empty($user)) {
                 $user = User::create([
                     'name'      => $u['name'],
-                    'email'     => $u['email'],
+                    'phone'     => $u['phone'],
                     'password'  => Hash::make($u['password'])
                 ]);
             }

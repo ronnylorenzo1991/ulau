@@ -2,103 +2,97 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Module;
-use App\Repositories\Anomaly\AnomalyRepository;
-use App\Repositories\Event\EventRepository;
-
-use Illuminate\Http\JsonResponse;
+use App\Repositories\Bill\BillRepository;
+use App\Repositories\Turn\TurnRepository;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    private AnomalyRepository $anomalyRepository;
-    private EventRepository $eventRepository;
+    private TurnRepository $turnRepository;
+    private BillRepository $billRepository;
 
-    public function __construct(
-        AnomalyRepository $anomalyRepository,
-        EventRepository $eventRepository,
-    ) {
-        $this->anomalyRepository = $anomalyRepository;
-        $this->eventRepository   = $eventRepository;
+    public function __construct(TurnRepository $turnRepository, BillRepository $billRepository)
+    {
+        $this->turnRepository = $turnRepository;
+        $this->billRepository = $billRepository;
     }
 
-    public function eventImages(Request $request)
+    public function calendarEvents(Request $request)
     {
         try {
-            $last = $request->get('last', 10);
+            $filters = [
+                'date' => [
+                    'start_at' => $request->get('start'),
+                    'end_at'   => $request->get('end'),
+                ],
+            ];
+            $turns   = $this->turnRepository->getTurnList($filters);
+            $bills   = $this->billRepository->getBillsList($filters);
+
+            return response()->json(array_merge($turns, $bills));
+        } catch (\Exception $e) {
+            \Log::info($e->getMessage());
+
+            return response()->json([
+                'message' => 'Hubo un problema al cargar los datos',
+            ], 422);
+        }
+    }
+
+    public function getStats(Request $request)
+    {
+        try {
 
             $filters = $request->only([
                 'date',
-                'class_label',
-            ]);
-
-            $images = $this->eventRepository->getEventsLastImages($last, $filters);
-            return response()->json([
-                'success' => true,
-                'images'  => array_values($images),
-                'message' => 'Datos cargados con éxito',
-            ], 200);
-        } catch (\Exception $e) {
-            \Log::info($e->getMessage());
-
-            return response()->json([
-                'message' => 'Hubo un problema al cargar los datos',
-            ], 422);
-        }
-    }
-    public function eventTotals(Request $request)
-    {
-        try {
-            $getBy      = $request->get('by', 'week');
-            $labels     = get_labels_by($getBy);
-            $weeKTotals = array_fill(0, 7, 0);
-           
-            $filters    = $request->only([
-                'date',
-                'class_label',
-            ]);
-
-            $events = $this->eventRepository->getEventsTotals($filters);
-            foreach ($events as $eventCount) {
-                $weeKTotals[$eventCount['day']] = $eventCount['count'];
-            }
-
-            return response()->json([
-                'success' => true,
-                'labels'  => $labels,
-                'count'   => $weeKTotals,
-                'message' => 'Datos cargados con éxito',
-            ], 200);
-        } catch (\Exception $e) {
-            \Log::info($e->getMessage());
-
-            return response()->json([
-                'message' => 'Hubo un problema al cargar los datos',
-            ], 422);
-        }
-    }
-
-    public function anomaliesByClass(Request $request)
-    {
-        try {
-            $filters    = $request->only([
-                'date',
-                'class_label',
             ]);
             
-            $labels    = [];
-            $series    = [];
-            $anomalies = $this->anomalyRepository->getAnomaliesByClass($filters);
-            foreach ($anomalies as $anomaly) {
-                $labels[] = $anomaly->label;
-                $series[] = $anomaly->quantity;
-            }
+            $profit        = $this->turnRepository->getTotalProfit($filters);
+            $expensesTotal = $this->billRepository->getTotalExpenses($filters);
+
             return response()->json([
-                'success' => true,
-                'labels'  => $labels,
-                'series'  => $series,
-                'data'    => $anomalies,
-                'message' => 'Datos cargados con éxito',
+                'success'       => true,
+                'profit'        => $profit[0]['total'],
+                'expensesTotal' => $expensesTotal[0]['total'],
+                'message'       => 'Datos cargados con éxito',
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::info($e->getMessage());
+
+            return response()->json([
+                'message' => 'Hubo un problema al cargar los datos',
+            ], 422);
+        }
+    }
+
+    public function eventsTotals(Request $request)
+    {
+        try {
+            $getBy           = $request->get('by', 'week');
+            $labels          = get_labels_by($getBy);
+            $weeKTurnsTotals = array_fill(0, 7, 0);
+            $weeKBillsTotals = array_fill(0, 7, 0);
+
+            $filters = $request->only([
+                'date',
+            ]);
+
+            $turnsEvents = $this->turnRepository->getTotals($filters);
+            foreach ($turnsEvents as $eventCount) {
+                $weeKTurnsTotals[$eventCount['day']] = $eventCount['count'];
+            }
+
+            $billsEvents = $this->billRepository->getTotals($filters);
+            foreach ($billsEvents as $eventCount) {
+                $weeKBillsTotals[$eventCount['day']] = $eventCount['count'];
+            }
+
+            return response()->json([
+                'success'    => true,
+                'labels'     => $labels,
+                'countTurns' => $weeKTurnsTotals,
+                'countBills' => $weeKBillsTotals,
+                'message'    => 'Datos cargados con éxito',
             ], 200);
         } catch (\Exception $e) {
             \Log::info($e->getMessage());

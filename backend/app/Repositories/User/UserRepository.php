@@ -21,8 +21,8 @@ class UserRepository extends SharedRepositoryEloquent
 
     public function create($userData)
     {
-        $randomPassword =  str::random(8);
-        $userData['password'] = bcrypt($randomPassword);
+        $defaultPassword =  'ulau2024*';
+        $userData['password'] = bcrypt($defaultPassword);
 
         $user = $this->entity->create($userData);
         foreach ($userData['roles'] as $roleId) {
@@ -30,12 +30,6 @@ class UserRepository extends SharedRepositoryEloquent
             $user->assignRole($currentRole);
         }
 
-        $data = [
-            'name'     => $user->name,
-            'username' => $user->email,
-            'password' => $randomPassword,
-        ];
-        Mail::to($user->email)->send(new UserCreatedMail($data));
         return $user;
     }
 

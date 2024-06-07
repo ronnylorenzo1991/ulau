@@ -21,10 +21,10 @@ class AnomalyRepository extends SharedRepositoryEloquent
     public function getAnomaliesByClass($filters)
     {
         $query = $this->entity->select(
-            DB::raw('count(anomalies.id) as quantity'), 
+            DB::raw('count(anomalies.id) as quantity'),
             DB::raw('anomalies.class_label as label')
         );
-        
+
         if (!empty($filters['date'])) {
             $filters['date'] = explode(',', $filters['date']);
             $query->whereBetween('events.created_at', $filters['date']);
@@ -33,7 +33,7 @@ class AnomalyRepository extends SharedRepositoryEloquent
         if (!empty($filters['class_label'])) {
             $query->where('anomalies.class_label', $filters['class_label']);
         }
-        
+
         return $query->groupBy('label')->get();
     }
 }

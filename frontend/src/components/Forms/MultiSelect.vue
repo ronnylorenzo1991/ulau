@@ -10,8 +10,8 @@ interface Option {
 }
 
 const target = ref(null)
-const options = ref<Option[]>([])
-const selected = ref<number[]>([])
+const options = ref([])
+const selected = ref([])
 const show = ref(false)
 
 const open = () => {

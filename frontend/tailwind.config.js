@@ -5,6 +5,12 @@ export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
+    backgroundColor: (theme) => ({
+      ...theme('colors'),
+    }),
+    borderColor: (theme) => ({
+      ...theme('colors'),
+    }),
     fontFamily: {
       satoshi: ['Satoshi', 'sans-serif']
     },
@@ -26,7 +32,7 @@ export default {
         bodydark: '#AEB7C0',
         bodydark1: '#DEE4EE',
         bodydark2: '#8A99AF',
-        primary: '#3C50E0',
+        primary: '#ff309e',
         secondary: '#80CAEE',
         stroke: '#E2E8F0',
         gray: '#EFF4FB',

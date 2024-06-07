@@ -14,12 +14,12 @@ const props = defineProps(['subtitle', 'title', 'customClasses'])
            <div class="flex">
             <img class="hidden dark:block" src="@/assets/images/logo.png" alt="Logo" width="60"/>
             <img class="dark:hidden" src="@/assets/images/logo.png" alt="Logo" width="60"/>
-            <p class="text-xl mb-2 my-3 px-5">PCGEEK</p>
+            <p class="text-xl mb-2 my-3 px-5">UÑAS LAURA</p>
            </div>
           </router-link>
 
           <p class="font-medium 2xl:px-20">
-            Sistema para la deteccion de anomalias en filetes de salmon.
+            Sistema de Administración de Turnos.
           </p>
 
           <span class="mt-15 inline-block">
