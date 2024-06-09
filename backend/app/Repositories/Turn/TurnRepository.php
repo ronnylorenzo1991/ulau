@@ -54,14 +54,14 @@ class TurnRepository extends SharedRepositoryEloquent
             'turn_statuses.name',
             DB::raw('CONCAT(turns.date_at) as date'),
             DB::raw('CONCAT(users.name, " ", TIME_FORMAT(turns.time_at, "%H:%S"), ", $", turns.payment) as title'),
-            DB::raw('(CASE WHEN turns.status_id = 1 THEN "#3C50E0"
-             WHEN turns.status_id = 2 THEN "#219653"
-             WHEN turns.status_id = 3 THEN "#D34053"
+            DB::raw('(CASE WHEN turns.status_id = 1 THEN "#ffa6a6"
+             WHEN turns.status_id = 2 THEN "#ff309e"
+             WHEN turns.status_id = 3 THEN "#ff5ce4"
              ELSE ""
          END) AS backgroundColor'),
-            DB::raw('(CASE WHEN turns.status_id = 1 THEN "#3C50E0"
-             WHEN turns.status_id = 2 THEN "#219653"
-             WHEN turns.status_id = 3 THEN "#D34053"
+            DB::raw('(CASE WHEN turns.status_id = 1 THEN "#ffa6a6"
+             WHEN turns.status_id = 2 THEN "#ff309e"
+             WHEN turns.status_id = 3 THEN "#ff5ce4"
              ELSE ""
          END) AS borderColor'),
         );

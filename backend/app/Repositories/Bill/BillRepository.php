@@ -27,8 +27,8 @@ class BillRepository extends SharedRepositoryEloquent
             'bills.product_name',
             DB::raw('CONCAT(bills.date_at) as date'),
             DB::raw('CONCAT(bills.product_name, " ", ", $", bills.payment) as title'),
-            DB::raw('CONCAT("#FFA70B") as borderColor'),
-            DB::raw('CONCAT("#FFA70B") as backgroundColor'),
+            DB::raw('CONCAT("#f21862") as borderColor'),
+            DB::raw('CONCAT("#f21862") as backgroundColor'),
         );
         $query->whereBetween('bills.created_at', $filters['date']);
      

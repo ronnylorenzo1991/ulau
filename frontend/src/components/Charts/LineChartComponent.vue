@@ -13,7 +13,7 @@ const props = defineProps({
     default: [],
   },
   colors: {
-    default: ['green', 'yellow'],
+    default: ['#ffa6a6', '#cf00ff'],
   },
   selectedMenuKey: {
     default: '',

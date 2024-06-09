@@ -447,12 +447,12 @@ const getEventTotals = async () => {
       {
         name: 'Ganancia',
         data: response.data.countTurns,
-        color: 'green'
+        color: '#ff5ce4'
       },
       {
         name: 'Inversión',
         data: response.data.countBills,
-        color: 'orange'
+        color: '#f21862'
       },
     ]
     lineChartLabels.value = response.data.labels
