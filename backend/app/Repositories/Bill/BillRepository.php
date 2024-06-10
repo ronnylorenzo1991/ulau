@@ -30,8 +30,8 @@ class BillRepository extends SharedRepositoryEloquent
             DB::raw('CONCAT("#f21862") as borderColor'),
             DB::raw('CONCAT("#f21862") as backgroundColor'),
         );
-        $query->whereBetween('bills.created_at', $filters['date']);
-     
+        $query->whereBetween('bills.date_at', $filters['date']);
+
         return $query->get()->toArray();
     }
 
