@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BillRequest;
 use App\Repositories\Bill\BillRepository;
 use Illuminate\Http\Request;
 
@@ -41,7 +42,7 @@ class BillController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(BillRequest $request)
     {
         try {
             $bill = $this->billRepository->create($request);
@@ -57,7 +58,7 @@ class BillController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(BillRequest $request, $id)
     {
         $bill = $this->billRepository->update($request, $id);
 

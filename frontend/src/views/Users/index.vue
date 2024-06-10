@@ -216,16 +216,10 @@ const remove = async (item) => {
         <Multiselect v-model="newUser.roles" placeholder="Seleccione los Roles" :close-on-select="true" 
           :searchable="true" :options="lists.roles" mode="tags" />
         <div class="absolute pb-6">
-          <label class="text-red-500 text-xs" v-text="getValidationText('roles')"></label>
+          <label class="text-[#ff309e] text-xs" v-text="getValidationText('roles')"></label>
         </div>
-        <InputGroup label="Nombre" type="text" placeholder="Nombre" v-model="newUser.name" class="my-5" />
-        <div class="absolute pb-6">
-          <label class="text-red-500 text-xs" v-text="getValidationText('name')"></label>
-        </div>
-        <InputGroup label="Teléfono" type="text" placeholder="Teléfono" v-model="newUser.phone" class="my-5" />
-        <div class="absolute pb-6">
-          <label class="text-red-500 text-xs" v-text="getValidationText('phone')"></label>
-        </div>
+        <InputGroup label="Nombre" type="text" placeholder="Nombre" v-model="newUser.name" class="my-5" :validation="getValidationText('name')" />
+        <InputGroup label="Teléfono" type="text" placeholder="Teléfono" v-model="newUser.phone" class="my-5" :validation="getValidationText('phone')"/>
       </Modal>
     </div>
   </DefaultLayout>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\Bill\BillRepository;
 use App\Repositories\Turn\TurnRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -20,10 +21,19 @@ class DashboardController extends Controller
     public function calendarEvents(Request $request)
     {
         try {
+
+            $todayDate = Carbon::now()->format('Y-m-d');
+
+            $startAt = Carbon::parse($request->get('start') ?: $todayDate)
+                ->startOfMonth()
+                ->format('Y-m-d');
+            $endAt   = Carbon::parse($request->get('end') ?: $todayDate)
+                ->lastOfMonth()
+                ->format('Y-m-d');
             $filters = [
                 'date' => [
-                    'start_at' => $request->get('start'),
-                    'end_at'   => $request->get('end'),
+                    'start_at' => $startAt,
+                    'end_at'   => $endAt,
                 ],
             ];
             $turns   = $this->turnRepository->getTurnList($filters);
@@ -46,7 +56,7 @@ class DashboardController extends Controller
             $filters = $request->only([
                 'date',
             ]);
-            
+
             $profit        = $this->turnRepository->getTotalProfit($filters);
             $expensesTotal = $this->billRepository->getTotalExpenses($filters);
 

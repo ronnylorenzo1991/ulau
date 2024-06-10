@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted,computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import BreadcrumbDefault from '@/components/Breadcrumbs/BreadcrumbDefault.vue'
 import CalendarCard from '@/components/CalendarCard.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -412,7 +412,7 @@ const completeEvent = async () => {
 
 const deleteEvent = () => {
   forceCloseContextMenu()
-  dialog.confirm('Segura que desea eliminar este turno?')
+  dialog.confirm('Segura que desea eliminar este elemento?')
     .then((confirm) => {
       if (confirm) {
         if (newTurn.value.id) {
@@ -421,6 +421,18 @@ const deleteEvent = () => {
               dialog.success(response.data.message)
               refreshCalendarEvents()
               resetTurnData()
+            }).catch(({ response }) => {
+              dialog.error(response.data.message)
+              console.log('error', response.data)
+              return
+            })
+        }
+        if (newBill.value.id) {
+          axios.delete(`${auth_store.api}/bills/${newBill.value.id}`, config)
+            .then(response => {
+              dialog.success(response.data.message)
+              refreshCalendarEvents()
+              resetBillData()
             }).catch(({ response }) => {
               dialog.error(response.data.message)
               console.log('error', response.data)
@@ -546,21 +558,21 @@ const getStatsCardData = async () => {
                 <label class="pl-2">3 Turno</label>
               </div>
             </div>
-            <input type="time" v-model="newTurn.time_at"
-              class="w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-normal outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
+            <input type="time" v-model="newTurn.time_at" :class="{'border-primary': getValidationText('time_at'), 'border-stroke': !getValidationText('time_at')}"
+              class="w-full rounded border-[1.5px] bg-transparent py-3 px-5 font-normal outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
             <div class="absolute pb-6">
-              <label class="text-red-500 text-xs" v-text="getValidationText('time')"></label>
+              <label class="text-[#ff309e] text-xs" v-text="getValidationText('time_at')"></label>
             </div>
-            <SingleSelect class="my-5" label="Clienta" placeholder="Seleccione la clienta" :options="lists.clients"
-              v-model="newTurn.client_id"></SingleSelect>
-            <InputGroup label="Observaciones" type="text" placeholder="Observaciones" v-model="newTurn.observations" />
+            <SingleSelect class="mt-5" label="Clienta" placeholder="Seleccione la clienta" :options="lists.clients"
+              v-model="newTurn.client_id" :validation="getValidationText('client_id')"></SingleSelect>
+            <InputGroup label="Observaciones" type="text" placeholder="Observaciones" v-model="newTurn.observations" class="mt-5"/>
           </div>
           <div class="transition-all duration-300" v-if="openTab === 2">
             <InputGroup label="Producto" type="text" placeholder="Producto" v-model="newBill.product_name"
-              class="py-3" />
+              class="py-3" :validation="getValidationText('product_name')"/>
             <InputGroup label="Descripción" type="text" placeholder="Descripcion" v-model="newBill.description"
               class="py-3" />
-            <InputGroup label="Costo" type="text" placeholder="Costo" v-model="newBill.payment" class="py-3" />
+            <InputGroup label="Costo" type="text" placeholder="Costo" v-model="newBill.payment" class="py-3" :validation="getValidationText('payment')"/>
           </div>
         </div>
       </Modal>

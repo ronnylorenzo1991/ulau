@@ -43,6 +43,8 @@ class TurnRepository extends SharedRepositoryEloquent
 
     public function getTurnList($filters)
     {
+        \Log::info($filters['date']);
+
         $query = Turn::select(
             'turns.id as turn_id',
             'turns.date_at',
@@ -65,10 +67,10 @@ class TurnRepository extends SharedRepositoryEloquent
              ELSE ""
          END) AS borderColor'),
         );
-        $query->whereBetween('turns.created_at', $filters['date']);
+        $query->whereBetween('turns.date_at', $filters['date']);
         $query->join('users', 'users.id', '=', 'turns.client_id');
         $query->join('turn_statuses', 'turn_statuses.id', '=', 'turns.status_id');
-
+        \Log::info($query->get()->toArray());
         return $query->get()->toArray();
     }
 

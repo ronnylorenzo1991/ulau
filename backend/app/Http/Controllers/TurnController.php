@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TurnRequest;
 use App\Repositories\Turn\TurnRepository;
 use Illuminate\Http\Request;
 
@@ -41,11 +42,10 @@ class TurnController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(TurnRequest $request)
     {
         try {
             $turn = $this->turnRepository->create($request);
-            \Log::info($request->all());
             return response()->json([
                 'success' => true,
                 'data'    => $turn,
@@ -58,7 +58,7 @@ class TurnController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(TurnRequest $request, $id)
     {
         $turn = $this->turnRepository->update($request, $id);
 
