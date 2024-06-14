@@ -71,7 +71,7 @@ const statsCardItems = ref([
   },
 ])
 
-const turns = ref(['08:00', '11:00', '13:00'])
+const turns = ref(['08:00', '11:00', '13:00', '15:00', '17:00'])
 
 const newTurn = ref({
   date_at: null,
@@ -90,6 +90,10 @@ const newBill = ref({
 })
 
 const lists = ref({})
+
+const resetValidationErrors = () => {
+  validationErrors.value = []
+}
 
 const save = (eventType = null) => {
   if (!eventType) {
@@ -113,6 +117,7 @@ const saveBill = async () => {
         isLoading.value = false
         if (response.status === 422) {
           validationErrors.value = response.data.errors
+          dialog.error(response.data.message)
         } else {
           console.log('error', response)
           dialog.error(response.data.message)
@@ -151,6 +156,8 @@ const saveTurn = async () => {
         isLoading.value = false
         if (response.status === 422) {
           validationErrors.value = response.data.errors
+          dialog.error('Hubo problemas al almacenar. Revise los datos.')
+          refreshCalendarEvents()
         } else {
           console.log('error', response)
           dialog.error(response.data.message)
@@ -198,6 +205,7 @@ const loadLists = async (list) => {
 const handleDateSelect = (data) => {
   resetBillData()
   resetTurnData()
+  forceCloseContextMenu()
   showEventModal.value = true
   newTurn.value.date_at = data.date
   newBill.value.date_at = data.date
@@ -229,6 +237,7 @@ const closeModal = () => {
   getEventTotals()
   resetTurnData()
   resetBillData()
+  resetValidationErrors()
   openTab.value = 1
 }
 
@@ -241,19 +250,39 @@ const eventClick = (item) => {
   contextMenuRef.value.open(item.jsEvent)
 }
 
+const updateTurn = (item) => {
+  newTurn.value.date_at = dayjs(item.event.start).format('MM/DD/YYYY')
+  newTurn.value.time_at = item.event.extendedProps.time_at
+  newTurn.value.client_id = item.event.extendedProps.client_id
+  newTurn.value.observations = item.event.extendedProps.observations
+  newTurn.value.id = item.event.extendedProps.turn_id
+  resetBillData()
+  save(1)
+}
 const eventDrop = (item) => {
   if (item.event.extendedProps.hasOwnProperty('time_at')) {
-    newTurn.value.date_at = dayjs(item.event.start).format('MM/DD/YYYY')
-    newTurn.value.time_at = item.event.extendedProps.time_at
-    newTurn.value.client_id = item.event.extendedProps.client_id
-    newTurn.value.observations = item.event.extendedProps.observations
-    newTurn.value.payment = item.event.extendedProps.payment
-    newTurn.value.status_id = item.event.extendedProps.status_id
-    newTurn.value.id = item.event.extendedProps.turn_id
-    resetBillData()
-    save(1)
-    return
+    let currentDate =  new Date(dayjs(item.event.extendedProps.date_at).format('MM/DD/YYYY'))
+    let newDate =  new Date(dayjs(item.event.start).format('MM/DD/YYYY'))
+    if (item.event.extendedProps.status_id != 1 && currentDate < newDate) {
+      dialog.confirm('Desea pasar este turno a pendiente?')
+        .then((confirm) => {
+          if (confirm) {
+            newTurn.value.status_id = 1
+            newTurn.value.payment = 0
+          } else {
+            newTurn.value.payment = item.event.extendedProps.payment
+            newTurn.value.status_id = item.event.extendedProps.status_id
+          }
+          updateTurn(item)
+          return
+        })
+    } else {
+      newTurn.value.payment = item.event.extendedProps.payment
+      newTurn.value.status_id = item.event.extendedProps.status_id
+      updateTurn(item)
+    }
   }
+
 
   if (item.event.extendedProps.hasOwnProperty('product_name')) {
     newBill.value.date_at = dayjs(item.event.start).format('MM/DD/YYYY')
@@ -557,22 +586,33 @@ const getStatsCardData = async () => {
                 <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[2]" />
                 <label class="pl-2">3 Turno</label>
               </div>
+              <div class="flex">
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[3]" />
+                <label class="pl-2">4 Turno</label>
+              </div>
+              <div class="flex">
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[4]" />
+                <label class="pl-2">5 Turno</label>
+              </div>
             </div>
-            <input type="time" v-model="newTurn.time_at" :class="{'border-primary': getValidationText('time_at'), 'border-stroke': !getValidationText('time_at')}"
+            <input type="time" v-model="newTurn.time_at"
+              :class="{ 'border-primary': getValidationText('time_at'), 'border-stroke': !getValidationText('time_at') }"
               class="w-full rounded border-[1.5px] bg-transparent py-3 px-5 font-normal outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" />
             <div class="absolute pb-6">
               <label class="text-[#ff309e] text-xs" v-text="getValidationText('time_at')"></label>
             </div>
             <SingleSelect class="mt-5" label="Clienta" placeholder="Seleccione la clienta" :options="lists.clients"
               v-model="newTurn.client_id" :validation="getValidationText('client_id')"></SingleSelect>
-            <InputGroup label="Observaciones" type="text" placeholder="Observaciones" v-model="newTurn.observations" class="mt-5"/>
+            <InputGroup label="Observaciones" type="text" placeholder="Observaciones" v-model="newTurn.observations"
+              class="mt-5" />
           </div>
           <div class="transition-all duration-300" v-if="openTab === 2">
-            <InputGroup label="Producto" type="text" placeholder="Producto" v-model="newBill.product_name"
-              class="py-3" :validation="getValidationText('product_name')"/>
+            <InputGroup label="Producto" type="text" placeholder="Producto" v-model="newBill.product_name" class="py-3"
+              :validation="getValidationText('product_name')" />
             <InputGroup label="Descripción" type="text" placeholder="Descripcion" v-model="newBill.description"
               class="py-3" />
-            <InputGroup label="Costo" type="text" placeholder="Costo" v-model="newBill.payment" class="py-3" :validation="getValidationText('payment')"/>
+            <InputGroup label="Costo" type="text" placeholder="Costo" v-model="newBill.payment" class="py-3"
+              :validation="getValidationText('payment')" />
           </div>
         </div>
       </Modal>
