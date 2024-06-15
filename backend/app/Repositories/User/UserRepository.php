@@ -42,4 +42,8 @@ class UserRepository extends SharedRepositoryEloquent
         $user->syncRoles($data['roles']);
         return $user;
     }
+    public function getClientTotals()
+    {
+        return User::role('cliente')->get()->count();
+    }
 }

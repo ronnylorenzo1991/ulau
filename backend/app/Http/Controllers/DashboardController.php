@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\Bill\BillRepository;
 use App\Repositories\Turn\TurnRepository;
+use App\Repositories\User\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -11,11 +12,13 @@ class DashboardController extends Controller
 {
     private TurnRepository $turnRepository;
     private BillRepository $billRepository;
+    private UserRepository $userRepository;
 
-    public function __construct(TurnRepository $turnRepository, BillRepository $billRepository)
+    public function __construct(TurnRepository $turnRepository, BillRepository $billRepository, UserRepository $userRepository)
     {
         $this->turnRepository = $turnRepository;
         $this->billRepository = $billRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function calendarEvents(Request $request)
@@ -59,11 +62,13 @@ class DashboardController extends Controller
 
             $profit        = $this->turnRepository->getTotalProfit($filters);
             $expensesTotal = $this->billRepository->getTotalExpenses($filters);
+            $clientsTotal  = $this->userRepository->getClientTotals();
 
             return response()->json([
                 'success'       => true,
                 'profit'        => $profit[0]['total'],
                 'expensesTotal' => $expensesTotal[0]['total'],
+                'clientsTotal'  => $clientsTotal,
                 'message'       => 'Datos cargados con éxito',
             ], 200);
         } catch (\Exception $e) {

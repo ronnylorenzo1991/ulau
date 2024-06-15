@@ -40,10 +40,10 @@ const props = defineProps({
 
     <div class="mt-4 flex items-end justify-between">
       <div>
-        <h4 class="text-title-md font-bold text-black dark:text-white">{{ total }}</h4>
+        <h4 class="text-title-md font-bold" :class="{'text-red blink': total <= 0, 'text-black dark:text-white': total > 0}">{{ total }}</h4>
       </div>
 
-      <span class="flex items-center gap-1 text-sm font-medium"
+      <span class="flex items-center gap-1 text-sm font-medium" v-if="percent"
         :class="{ 'text-meta-3': percent > 0, 'text-meta-5': percent < 0 }">
         {{ percent }}%
         <svg v-if="percent > 0" class="fill-meta-3" width="10" height="11" viewBox="0 0 10 11" fill="none"
@@ -64,3 +64,17 @@ const props = defineProps({
   </div>
   <!-- Card Item End -->
 </template>
+<style>
+.blink {
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+</style>

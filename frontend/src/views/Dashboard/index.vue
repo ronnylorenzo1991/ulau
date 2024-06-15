@@ -43,31 +43,27 @@ const openTab = ref(1)
 const statsCardItems = ref([
   {
     icon: 'dollar',
-    title: 'Ganancias Mes',
-    label: 'Cracking',
+    title: 'Ganancias (Mes)',
     total: 0,
-    percent: 0
+    percent: false
   },
   {
     icon: 'money-bill',
-    title: 'Gastos Mes',
-    label: 'Gapping',
+    title: 'Gastos (Mes)',
     total: 0,
-    percent: 0
+    percent: false
   },
   {
     icon: 'exclamation-triangle',
-    label: 'Melanosis',
-    title: 'Prom Ganancia diaria',
+    title: 'Ganancia Neta (Mes)',
     total: 0,
-    percent: 0
+    percent: false
   },
   {
     icon: 'exclamation-circle',
-    label: 'Hematoma',
-    title: 'Prom Inv. diaria',
+    title: 'Total de Clientes',
     total: 0,
-    percent: 0
+    percent: false
   },
 ])
 
@@ -507,6 +503,8 @@ const getStatsCardData = async () => {
   await axios.get(url, config).then(response => {
     statsCardItems.value[0].total = response.data.profit
     statsCardItems.value[1].total = response.data.expensesTotal
+    statsCardItems.value[2].total = response.data.profit - response.data.expensesTotal
+    statsCardItems.value[3].total = response.data.clientsTotal
   }).catch(e => {
     console.log(e)
   })
