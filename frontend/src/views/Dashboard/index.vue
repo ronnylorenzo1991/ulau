@@ -256,9 +256,10 @@ const updateTurn = (item) => {
   save(1)
 }
 const eventDrop = (item) => {
+  forceCloseContextMenu()
   if (item.event.extendedProps.hasOwnProperty('time_at')) {
-    let currentDate =  new Date(dayjs(item.event.extendedProps.date_at).format('MM/DD/YYYY'))
-    let newDate =  new Date(dayjs(item.event.start).format('MM/DD/YYYY'))
+    let currentDate = new Date(dayjs(item.event.extendedProps.date_at).format('MM/DD/YYYY'))
+    let newDate = new Date(dayjs(item.event.start).format('MM/DD/YYYY'))
     if (item.event.extendedProps.status_id != 1 && currentDate < newDate) {
       dialog.confirm('Desea pasar este turno a pendiente?')
         .then((confirm) => {
