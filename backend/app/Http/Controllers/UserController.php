@@ -70,7 +70,6 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        \Log::info($id);
         $this->userRepository->delete($id);
 
         return response()->json([

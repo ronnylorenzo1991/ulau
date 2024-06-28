@@ -27,7 +27,7 @@ class TurnRequest extends FormRequest
     {
         return [
             'date_at'   => ['required'],
-            'time_at'   => ['required',Rule::unique('turns')->where(fn(Builder $query)   => $query->where('date_at', request()->get('date_at')))],
+            'time_at'   => ['required',Rule::unique('turns')->where(fn (Builder $query) => $query->where('date_at', request()->get('date_at'))->where('status_id', '<>', '3'))],
             'payment'   => ['numeric'],
             'client_id' => ['required', 'gte:1'],
         ];

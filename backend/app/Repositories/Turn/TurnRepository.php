@@ -43,8 +43,6 @@ class TurnRepository extends SharedRepositoryEloquent
 
     public function getTurnList($filters)
     {
-        \Log::info($filters['date']);
-
         $query = Turn::select(
             'turns.id as turn_id',
             'turns.date_at',
