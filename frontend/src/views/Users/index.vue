@@ -1,14 +1,13 @@
-<script setup lang="ts">
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import BreadcrumbDefault from '@/components/Breadcrumbs/BreadcrumbDefault.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import TableComponent from '../../components/Tables/TableComponent.vue'
 import { authStore } from '@/stores/auth'
-import SingleSelect from '@/components/Forms/SelectGroup/SingleSelectComponent.vue'
 import InputGroup from '@/components/Forms/InputComponent.vue'
+import Modal from '@/components/Modal/Modal.vue'
 import Multiselect from '@vueform/multiselect'
 import '@/assets/css/multiselect.css'
-import Modal from '@/components/Modal/Modal.vue'
 
 const auth_store = authStore()
 const config = reactive({
@@ -193,7 +192,6 @@ const remove = async (item) => {
       navigate()
     })
 }
-
 </script>
 
 <template>

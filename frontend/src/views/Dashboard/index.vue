@@ -1,11 +1,9 @@
-<script setup lang="ts">
+<script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import BreadcrumbDefault from '@/components/Breadcrumbs/BreadcrumbDefault.vue'
-import CalendarCard from '@/components/CalendarCard.vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import { Calendar } from '@fullcalendar/core'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -22,7 +20,13 @@ import ContextMenu from "./ContextMenu.vue";
 import Swal from 'sweetalert2'
 import StatsSection from './StatsSection.vue'
 import LineChartComponent from '../../components/Charts/LineChartComponent.vue'
+import Multiselect from '@vueform/multiselect'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import { useDarkModeStore } from '@/stores/darkMode'
+import '@vuepic/vue-datepicker/dist/main.css'
+import '@/assets/css/multiselect.css'
 
+const darkModeStore = useDarkModeStore()
 const auth_store = authStore()
 const config = reactive({
   headers: { authorization: auth_store.token }
@@ -39,7 +43,7 @@ const validationErrors = ref([])
 const lineChartLabels = ref()
 const lineChartSeries = ref()
 const openTab = ref(1)
-
+const lineChartKey = ref(0)
 const statsCardItems = ref([
   {
     icon: 'dollar',
@@ -51,6 +55,7 @@ const statsCardItems = ref([
     icon: 'money-bill',
     title: 'Gastos (Mes)',
     total: 0,
+
     percent: false
   },
   {
@@ -67,7 +72,13 @@ const statsCardItems = ref([
   },
 ])
 
-const turns = ref(['08:00', '11:00', '13:00', '15:00', '17:00'])
+const filters = ref({
+  turn: [],
+  clients: [],
+  date_range: [],
+})
+
+const customTurns = ref(['08:00:00', '11:00:00', '13:00:00', '15:00:00', '17:00:00'])
 
 const newTurn = ref({
   date_at: null,
@@ -138,6 +149,29 @@ const saveBill = async () => {
   }
 }
 
+const updateDroppedTurn = async (item) => {
+  let date = dayjs(item.event.start).format('YYYY-MM-DD')
+  const url = `${auth_store.api}/turns/allByDate?date=${date}`
+  axios.get(url, config)
+      .then(response => {
+        let existedTurn = response.data.turns.filter(turn => turn.time_at == item.event.extendedProps.time_at)
+        if (existedTurn.length > 0) {
+          dialog.error('Ya existe un turno en esa hora')
+          refreshCalendarEvents()
+        } else {
+          updateTurn(item)
+        }
+      }).catch(({ response }) => {
+        isLoading.value = false
+        if (response.status === 422) {
+          validationErrors.value = response.data.errors
+        } else {
+          console.log('error', response)
+          dialog.error(response.data.message)
+        }
+      })
+}
+
 const saveTurn = async () => {
   isLoading.value = true
   if (newTurn.value.id) {
@@ -178,7 +212,6 @@ const saveTurn = async () => {
       })
   }
 }
-
 
 const loadLists = async (list) => {
   let url = `${auth_store.api}/lists?lists=${JSON.stringify(list)}`
@@ -253,8 +286,9 @@ const updateTurn = (item) => {
   newTurn.value.observations = item.event.extendedProps.observations
   newTurn.value.id = item.event.extendedProps.turn_id
   resetBillData()
-  save(1)
+  save(1) // 1 is turn
 }
+
 const eventDrop = (item) => {
   forceCloseContextMenu()
   if (item.event.extendedProps.hasOwnProperty('time_at')) {
@@ -276,7 +310,7 @@ const eventDrop = (item) => {
     } else {
       newTurn.value.payment = item.event.extendedProps.payment
       newTurn.value.status_id = item.event.extendedProps.status_id
-      updateTurn(item)
+      updateDroppedTurn(item)
     }
   }
 
@@ -289,12 +323,19 @@ const eventDrop = (item) => {
     newBill.value.status_id = item.event.extendedProps.status_id
     newBill.value.id = item.event.extendedProps.bill_id
     resetTurnData()
-    save(2)
+    save(2) // 2 is bill
     return
   }
 }
 
+const reloadDashboard = () => {
+  loadLists(['clients'])
+  getStatsCardData()
+  getEventTotals()
+}
+
 onMounted(async () => {
+  setThisWeekDateRange()
   await loadLists(['clients'])
   await getStatsCardData()
   calendarApi.value = fullCalendarRef.value.getApi()
@@ -479,8 +520,8 @@ const isTurnEvent = computed(() => {
 })
 
 const getEventTotals = async () => {
-  let url = `${auth_store.api}/dashboard/events/totals?by=week`
-  await axios.get(url, config).then(response => {
+  let url = `${auth_store.api}/dashboard/events/totals`
+  await axios.get(applyFilters(url), config).then(response => {
     lineChartSeries.value = [
       {
         name: 'Ganancia',
@@ -494,6 +535,7 @@ const getEventTotals = async () => {
       },
     ]
     lineChartLabels.value = response.data.labels
+    lineChartKey.value++
   }).catch(e => {
     console.log(e)
   })
@@ -501,7 +543,7 @@ const getEventTotals = async () => {
 
 const getStatsCardData = async () => {
   let url = `${auth_store.api}/dashboard/stats`
-  await axios.get(url, config).then(response => {
+  await axios.get(applyFilters(url), config).then(response => {
     statsCardItems.value[0].total = response.data.profit
     statsCardItems.value[1].total = response.data.expensesTotal
     statsCardItems.value[2].total = response.data.profit - response.data.expensesTotal
@@ -511,6 +553,32 @@ const getStatsCardData = async () => {
   })
 }
 
+const applyFilters = (url) => {
+  url = !url.includes('?') ? url + '?' : url
+
+  Object.keys(filters.value).forEach(item => {
+    if (filters.value[item] !== null && filters.value[item].length > 0) {
+      url += `&${item}=${filters.value[item] || ''}`
+    }
+  })
+
+  return url
+}
+
+const setThisWeekDateRange = () => {
+  let today = new Date();
+  let dayOfWeek = today.getDay();
+  
+  let startDate = new Date(today);
+  startDate.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  startDate.setHours(0, 0, 0, 0);
+  
+  let endDate = new Date(today);
+  endDate.setDate(today.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek)); 
+  endDate.setHours(23, 59, 59, 999);
+  
+  filters.value.date_range = [formatDate(startDate, 'YYYY-MM-DD hh:mm'), formatDate(endDate, 'YYYY-MM-DD hh:mm')];
+};
 
 </script>
 
@@ -521,11 +589,35 @@ const getStatsCardData = async () => {
       <!-- Breadcrumb Start -->
       <BreadcrumbDefault :pageTitle="pageTitle" />
       <!-- Breadcrumb End -->
+      <!-- Filters -->
+      <div class="dark:border-strokedark dark:bg-primarydark my-5 py-4 z-50 w-full">
+        <div class="flex items-center gap-8">
+          <div class="w-full">
+            <label class="mb-3 block text-sm font-medium text-black dark:text-white" for="start_date"> Fechas
+            </label>
+            <VueDatePicker locale="es" v-model="filters.date_range" class="py-2" model-type="yyyy-MM-dd HH:mm" range
+             multi-calendars :dark="darkModeStore.darkMode" @update:model-value="reloadDashboard"
+              cancelText="cancelar" selectText="seleccionar"></VueDatePicker>
+          </div>
+          <div class="w-full">
+            <label class="mb-3 block text-sm font-medium text-black dark:text-white" for="start_date"> Turnos
+            </label>
+            <Multiselect v-model="filters.turn" placeholder="Turnos"
+              @select="reloadDashboard" @deselect="reloadDashboard" @clear="reloadDashboard" :options="customTurns" />
+          </div>
+          <div class="w-full">
+            <label class="mb-3 block text-sm font-medium text-black dark:text-white" for="start_date"> Clientas
+            </label>
+            <Multiselect v-model="filters.clients" placeholder="Clienta" :options="lists.clients" mode="tags" @select="reloadDashboard"
+              @deselect="reloadDashboard" @clear="reloadDashboard" />
+          </div>
+        </div>
+      </div>
       <div class="grid grid-cols-1 gap-5 md:gap-6 2xl:gap-7.5 sm:grid-cols-4 py-10">
         <StatsSection :card-items="statsCardItems" />
       </div>
       <div class="py-5">
-        <LineChartComponent :labels="lineChartLabels" :series="lineChartSeries" v-if="lineChartLabels" />
+        <LineChartComponent :labels="lineChartLabels" :series="lineChartSeries" v-if="lineChartLabels" :key="lineChartKey"/>
       </div>
 
       <div class="py-5">
@@ -574,23 +666,23 @@ const getStatsCardData = async () => {
             <label class="mb-3 block text-sm font-medium text-black dark:text-white">Hora</label>
             <div class="flex gap-2 my-2">
               <div class="flex">
-                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[0]" />
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="customTurns[0]" />
                 <label class="pl-2">1 Turno</label>
               </div>
               <div class="flex">
-                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[1]" />
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="customTurns[1]" />
                 <label class="pl-2">2 Turno</label>
               </div>
               <div class="flex">
-                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[2]" />
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="customTurns[2]" />
                 <label class="pl-2">3 Turno</label>
               </div>
               <div class="flex">
-                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[3]" />
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="customTurns[3]" />
                 <label class="pl-2">4 Turno</label>
               </div>
               <div class="flex">
-                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="turns[4]" />
+                <input type="radio" name="radio-1" class="radio" v-model="newTurn.time_at" :value="customTurns[4]" />
                 <label class="pl-2">5 Turno</label>
               </div>
             </div>
@@ -600,8 +692,12 @@ const getStatsCardData = async () => {
             <div class="absolute pb-6">
               <label class="text-[#ff309e] text-xs" v-text="getValidationText('time_at')"></label>
             </div>
-            <SingleSelect class="mt-5" label="Clienta" placeholder="Seleccione la clienta" :options="lists.clients"
-              v-model="newTurn.client_id" :validation="getValidationText('client_id')"></SingleSelect>
+            <div class="mt-5">
+              <label class="mb-3 block text-sm font-medium text-black dark:text-white" for="start_date"> Clientas
+              </label>
+              <Multiselect v-model="newTurn.client_id" placeholder="Clientas" :options="lists.clients" searchable="true" />
+              <label class="text-[#ff309e] text-xs" v-text="getValidationText('client_id')"></label>
+            </div>
             <InputGroup label="Observaciones" type="text" placeholder="Observaciones" v-model="newTurn.observations"
               class="mt-5" />
           </div>
@@ -618,8 +714,27 @@ const getStatsCardData = async () => {
     </div>
   </DefaultLayout>
 </template>
-<style>
+<style scoped>
 input {
   color-scheme: dark;
+}
+::-webkit-calendar-picker-indicator {
+  @apply brightness-200;
+  background: url(https://cdn3.iconfinder.com/data/icons/linecons-free-vector-icons-pack/32/calendar-16.png) center/80% no-repeat;
+}
+
+/* vuedatepicker custom styles */
+.dp__theme_dark {
+  --dp-background-color: #1d2a39;
+  --dp-text-color: #8c9ab4;
+  --dp-border-color: #757e8f;
+}
+
+.dp__theme_light {
+  --dp-border-color: #E2E8F0;
+}
+
+.dp__input {
+  height: 40px;
 }
 </style>

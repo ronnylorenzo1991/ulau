@@ -8,9 +8,7 @@ use App\Http\Controllers\TurnController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AnomalyTypeController;
 use App\Http\Controllers\DefaultController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\GeneralSettingController;
@@ -23,11 +21,6 @@ Route::get('/dashboard/events', [DashboardController::class, 'calendarEvents']);
 Route::get('/dashboard/events/totals', [DashboardController::class, 'eventsTotals']);
 Route::get('/dashboard/stats', [DashboardController::class, 'getStats']);
 
-Route::middleware(['api'])->group(function () {
-    Route::post('/events/create', [EventController::class, 'store'])->withoutMiddleware("throttle:api");
-    Route::post('/events/updateByExternalId', [EventController::class, 'updateByExternalId'])->withoutMiddleware("throttle:api");
-});
-
 Route::middleware('auth:api')->get('/lists', [DefaultController::class, 'getLists'])
     ->name('defaults.lists');
 Route::middleware('auth:api')->get('/user', function (Request $request) {
@@ -35,6 +28,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:api')->post('/roles/toggle_permission/{id}', [RoleController::class, 'togglePermission']);
+Route::middleware('auth:api')->get('/turns/allByDate', [TurnController::class, 'turnsByDate']);
 
 Route::middleware('auth:api')->group(function () {
     Route::resources([
@@ -42,7 +36,6 @@ Route::middleware('auth:api')->group(function () {
         'permissions'      => PermissionController::class,
         'users'            => UserController::class,
         'roles'            => RoleController::class,
-        'anomaly_types'    => AnomalyTypeController::class,
         'turns'            => TurnController::class,
         'bills'            => BillController::class,
     ]);

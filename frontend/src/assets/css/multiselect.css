@@ -1,7 +1,6 @@
 .multiselect {
+    @apply dark:fill-strokedark dark:bg-form-input border border-stroke dark:border-slate-500 bg-white;
     align-items: center;
-    background: var(--ms-bg, #fff);
-    border: var(--ms-border-width, 1px) solid var(--ms-border-color, #d1d5db);
     border-radius: var(--ms-radius, 4px);
     box-sizing: border-box;
     cursor: pointer;
@@ -77,10 +76,10 @@
 }
 
 .multiselect-search {
+    @apply dark:fill-strokedark dark:bg-form-input dark:border-form-input bg-white;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background: var(--ms-bg, #fff);
     border: 0;
     border-radius: var(--ms-radius, 4px);
     bottom: 0;
@@ -231,7 +230,7 @@
 .multiselect-inifite-spinner,
 .multiselect-spinner {
     animation: multiselect-spin 1s linear infinite;
-    background-color: var(--ms-spinner-color, #10b981);
+    background-color: var(--ms-spinner-color, #ff309e);
     flex-grow: 0;
     flex-shrink: 0;
     height: 1rem;
@@ -306,8 +305,8 @@
 }
 
 .multiselect-dropdown {
+    @apply dark:fill-strokedark dark:bg-form-input dark:border-form-input bg-white;
     -webkit-overflow-scrolling: touch;
-    background: var(--ms-dropdown-bg, #fff);
     border: var(--ms-dropdown-border-width, 1px) solid var(--ms-dropdown-border-color, #d1d5db);
     border-radius: 0 0 var(--ms-dropdown-radius, 4px) var(--ms-dropdown-radius, 4px);
     bottom: 0;
@@ -418,7 +417,7 @@
 }
 
 .multiselect-option.is-selected {
-    background: var(--ms-option-bg-selected, #10b981);
+    background: var(--ms-option-bg-selected, #ff309e);
     color: var(--ms-option-color-selected, #fff)
 }
 
@@ -429,7 +428,7 @@
 }
 
 .multiselect-option.is-selected.is-pointed {
-    background: var(--ms-option-bg-selected-pointed, #26c08e);
+    background: var(--ms-option-bg-selected-pointed, #ff309e);
     color: var(--ms-option-color-selected-pointed, #fff)
 }
 

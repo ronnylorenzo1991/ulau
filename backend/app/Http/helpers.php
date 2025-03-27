@@ -29,10 +29,35 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\File;
 
-function get_labels_by($getBy) {
-    $labels = ['week' =>['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']];
+function sanitize_date_range($dateRange)
+{
+    $dateRange = explode(',', $dateRange);
+    $start_at  = !empty($dateRange[0]) ? Carbon::parse($dateRange[0]) : Carbon::now();
+    $end_at    = !empty($dateRange[1]) ? Carbon::parse($dateRange[1]) : Carbon::now();
+
+    return [$start_at, $end_at];
+}
+
+function get_labels_by($getBy)
+{
+    $labels = [
+        'week' => ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
+        'day'  => get_day_hours(),
+    ];
+
     return $labels[$getBy];
 }
+
+function get_day_hours()
+{
+    return array_map(
+        function ($hour) {
+            return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00';
+        },
+        range(0, 23),
+    );
+}
+
 function is_array_fill($array)
 {
     return is_array($array) && count($array);
@@ -167,7 +192,7 @@ function standardizeEmails($emails)
 {
     if (is_array($emails)) {
         return collect($emails)
-            ->transform(fn($email) => trim(Str::lower($email)))
+            ->transform(fn ($email) => trim(Str::lower($email)))
             ->toArray();
     }
 

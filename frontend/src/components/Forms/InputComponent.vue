@@ -33,7 +33,7 @@ const getDynamicClass = computed(() => {
 
 <template>
   <div :class="customClasses">
-    <label class="mb-2.5 block text-black dark:text-white">
+    <label class="mb-3 block text-sm font-medium text-black dark:text-white" for="start_date"> 
       {{ label }}
       <span v-if="required" class="text-meta-1">*</span>
     </label>

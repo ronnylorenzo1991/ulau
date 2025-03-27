@@ -55,10 +55,13 @@ class DashboardController extends Controller
     public function getStats(Request $request)
     {
         try {
-
             $filters = $request->only([
-                'date',
+                'turn',
+                'clients',
+                'date_range',
             ]);
+
+            $filters['date_range'] = sanitize_date_range($filters['date_range']);
 
             $profit        = $this->turnRepository->getTotalProfit($filters);
             $expensesTotal = $this->billRepository->getTotalExpenses($filters);
@@ -66,10 +69,10 @@ class DashboardController extends Controller
 
             return response()->json([
                 'success'       => true,
-                'profit'        => $profit[0]['total'],
-                'expensesTotal' => $expensesTotal[0]['total'],
-                'clientsTotal'  => $clientsTotal,
-                'message'       => 'Datos cargados con éxito',
+                'profit'        => $profit[0]['total'] ?? 0,
+                'expensesTotal' => $expensesTotal[0]['total'] ?? 0,
+                'clientsTotal'  => $clientsTotal ?? 0,
+                'message'       => 'Datos cargados con éxito' ?? 0,
             ], 200);
         } catch (\Exception $e) {
             \Log::info($e->getMessage());
@@ -83,30 +86,21 @@ class DashboardController extends Controller
     public function eventsTotals(Request $request)
     {
         try {
-            $getBy           = $request->get('by', 'week');
-            $labels          = get_labels_by($getBy);
-            $weeKTurnsTotals = array_fill(0, 7, 0);
-            $weeKBillsTotals = array_fill(0, 7, 0);
-
             $filters = $request->only([
-                'date',
+                'turn',
+                'clients',
+                'date_range',
             ]);
 
-            $turnsEvents = $this->turnRepository->getTotals($filters);
-            foreach ($turnsEvents as $eventCount) {
-                $weeKTurnsTotals[$eventCount['day']] = $eventCount['count'];
-            }
-
-            $billsEvents = $this->billRepository->getTotals($filters);
-            foreach ($billsEvents as $eventCount) {
-                $weeKBillsTotals[$eventCount['day']] = $eventCount['count'];
-            }
-
+            $turnsData                            = $this->turnRepository->getTotals($filters);
+            $billsData                            = $this->billRepository->getTotals($filters);
+            [$startDate, $endDate]                = sanitize_date_range($filters['date_range']);
+            [$labels, $turnsTotals, $billsTotals] = $this->getChartLineData($startDate, $endDate, $turnsData, $billsData);
             return response()->json([
                 'success'    => true,
                 'labels'     => $labels,
-                'countTurns' => $weeKTurnsTotals,
-                'countBills' => $weeKBillsTotals,
+                'countTurns' => $turnsTotals,
+                'countBills' => $billsTotals,
                 'message'    => 'Datos cargados con éxito',
             ], 200);
         } catch (\Exception $e) {
@@ -116,5 +110,54 @@ class DashboardController extends Controller
                 'message' => 'Hubo un problema al cargar los datos',
             ], 422);
         }
+    }
+
+    private function getChartLineData($startDate, $endDate, $turnsData, $billsData)
+    {
+        $withZeroTurns = [];
+        $withZeroBills = [];
+
+        if ($startDate->isSameDay($endDate)) {
+            $labels = get_labels_by('day');
+
+            // sanitize events list with zero events
+            foreach (range(0, 23) as $hour) {
+                $turn            = $turnsData->firstWhere('date', $hour);
+                $withZeroTurns[] = [
+                    'date'  => $hour,
+                    'total' => $turn ? $turn->count : 0
+                ];
+
+                $bill            = $billsData->firstWhere('date', $hour);
+                $withZeroBills[] = [
+                    'date'  => $hour,
+                    'total' => $bill ? $bill->count : 0
+                ];
+            }
+        } else {
+            while ($startDate <= $endDate) {
+                $dates[] = $labels[] = $startDate->toDateString();
+                $startDate->addDay();
+            }
+
+            foreach ($dates as $date) {
+                $turn            = $turnsData->firstWhere('date', $date);
+                $withZeroTurns[] = [
+                    'date'  => $date,
+                    'total' => $turn ? $turn->count : 0
+                ];
+
+                $bill            = $billsData->firstWhere('date', $date);
+                $withZeroBills[] = [
+                    'date'  => $date,
+                    'total' => $bill ? $bill->count : 0
+                ];
+            }
+        }
+
+        $withZeroTurns = array_column($withZeroTurns, 'total');
+        $withZeroBills = array_column($withZeroBills, 'total');
+
+        return [$labels, $withZeroTurns, $withZeroBills];
     }
 }

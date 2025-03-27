@@ -11,7 +11,7 @@ class BillRepository extends SharedRepositoryEloquent
 {
     private Bill $entity;
     public function __construct(
-        Bill $entity
+        Bill $entity,
     ) {
         parent::__construct($entity);
         $this->entity = $entity;
@@ -37,27 +37,26 @@ class BillRepository extends SharedRepositoryEloquent
 
     public function getTotals($filters)
     {
-        $query = $this->entity->select(
-            DB::raw('DAYNAME(bills.date_at) AS week_day'),
-            DB::raw('WEEKDAY(bills.date_at) as day'),
-            DB::raw("SUM(bills.payment) as count"),
-        );
-
-        // Filters
-        if (!empty($filters['date'])) {
-            $filters['date'] = explode(',', $filters['date']);
-            $query->whereBetween('bills.created_at', $filters['date']);
+        if (!empty($filters['date_range'])) {
+            $dateRange = explode(',', $filters['date_range']);
+            $start_at  = !empty($dateRange[0]) ? Carbon::parse($dateRange[0]) : Carbon::now();
+            $end_at    = !empty($dateRange[1]) ? Carbon::parse($dateRange[1]) : Carbon::now();
         } else {
-            $query->whereBetween(
-                'date_at',
-                [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-            );
+            $start_at = Carbon::now()->startOfWeek();
+            $end_at   = Carbon::now()->endOfWeek();
         }
 
-        return $query->orderBy('day')
-            ->groupBy(DB::raw('bills.date_at'))
+        $dateQuery = $start_at->isSameDay($end_at) ? "HOUR(bills.created_at) as date" : "DATE(bills.date_at) as date";
+
+        $query = $this->entity->select(DB::raw($dateQuery), DB::raw('SUM(bills.payment) as count'));
+
+        $query->whereBetween('bills.date_at', [$start_at, $end_at]);
+
+        return $query->groupBy('date')
+            ->orderBy('date', 'asc')
             ->get();
     }
+
 
     public function getTotalExpenses($filters)
     {
@@ -65,9 +64,8 @@ class BillRepository extends SharedRepositoryEloquent
             DB::raw("SUM(bills.payment) as total"),
         );
 
-        if (!empty($filters['date'])) {
-            $filters['date'] = explode(',', $filters['date']);
-            $query->whereBetween('bills.created_at', $filters['date']);
+        if (!empty($filters['date_range'])) {
+            $query->whereBetween('bills.date_at', $filters['date_range']);
         } else {
             $query->whereBetween(
                 'date_at',

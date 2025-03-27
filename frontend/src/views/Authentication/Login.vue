@@ -24,12 +24,6 @@ const getFirstRouteWithPermission = () => {
     return '/dashboard'
   }
 
-  auth_store.user.permissions.forEach(permission => {
-    if (permission.name == "menu.work_orders") {
-      route = '/work_orders'
-    }
-  })
-
   return route
 }
 
@@ -64,17 +58,30 @@ async function login() {
 <template>
   <div class="my-36 mx-36">
     <DefaultAuthCard subtitle="Acceder al sistema" title="Ingrese Sus Credenciales">
-      <InputGroup label="Nombre de usuario o teléfono" placeholder="Nombre de usuario o teléfono" v-model="phone">
+      <InputGroup
+        label="Nombre de usuario o teléfono"
+        placeholder="Nombre de usuario o teléfono"
+        v-model="phone"
+      >
         <fa icon="phone"></fa>
       </InputGroup>
 
-      <InputGroup label="Contraseña" type="password" placeholder="Contraseña" v-model="password">
+      <InputGroup
+        label="Contraseña"
+        type="password"
+        placeholder="Contraseña"
+        v-model="password"
+      >
         <fa icon="lock"></fa>
       </InputGroup>
 
       <div class="mb-5 mt-6">
-        <button @click="login"
-          class="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 font-medium text-white transition hover:bg-opacity-90">Login</button>
+        <button
+          @click="login"
+          class="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 font-medium text-white transition hover:bg-opacity-90"
+        >
+          Login
+        </button>
       </div>
     </DefaultAuthCard>
   </div>

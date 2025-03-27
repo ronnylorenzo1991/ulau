@@ -30,7 +30,7 @@ class DefaultController extends Controller
                 case 'clients':
                     $results['clients'] = User::whereHas("roles", function ($q) {
                         $q->where("name", "cliente");
-                    })->get()->pluck('name', 'id');
+                    })->orderBy("name", "asc")->get()->pluck('name', 'id');
                     break;
                 case 'permissions':
                     $results['permissions'] = Permission::all();

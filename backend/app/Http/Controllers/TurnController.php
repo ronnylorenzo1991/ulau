@@ -20,13 +20,19 @@ class TurnController extends Controller
     public function index(Request $request)
     {
         try {
+            $filters = $request->only([
+                'turn',
+                'clients',
+                'date_range',
+            ]);
+
             $sortBy  = $request->get('sortBy') ?? 'id';
             $sortDir = $request->get('sortDir') ?? 'desc';
 
             $perPage = (int) $request->get('per_page');
             $page    = (int) $request->get('page');
 
-            $turns = $this->turnRepository->getAll($sortBy, $sortDir, $perPage, $page, []);
+            $turns = $this->turnRepository->getAll($sortBy, $sortDir, $perPage, $page, [], $filters);
 
             return response()->json([
                 'success' => true,
@@ -95,6 +101,19 @@ class TurnController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Elemento cancelado con éxito',
+        ]);
+    }
+
+    public function turnsByDate(Request $request)
+    {
+        $date = $request->get('date');
+        
+        $turns = $this->turnRepository->findByDate($date);
+
+        return response()->json([
+            'success' => true,
+            'turns'   => $turns,
+            'message' => 'Elemento encontrado con éxito',
         ]);
     }
 }

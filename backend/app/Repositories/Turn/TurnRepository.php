@@ -19,24 +19,18 @@ class TurnRepository extends SharedRepositoryEloquent
 
     public function getAll($sortBy, $sortDir, $perPage, $page, $relationships = null, $filters = [])
     {
-        $query = Turn::select(
-            'events.id as id',
-            'events.image_path',
-            'events.date_at',
-        );
+        $query = Turn::select('*');
 
         $query->with($relationships);
 
         // Filters
-        if (!empty($filters['date'])) {
-            $filters['date'] = explode(',', $filters['date']);
-            $query->whereBetween('events.created_at', $filters['date']);
+        if (!empty($filters['date_range'])) {
+            $dateRange = explode(',', $filters['date_range']);
+            $startDate  = !empty($dateRange[0]) ? Carbon::parse($dateRange[0]) : Carbon::now();
+            $endDate    = !empty($dateRange[1]) ? Carbon::parse($dateRange[1]) : Carbon::now();
+            $query->whereBetween('turns.created_at', [$startDate, $endDate]);
         }
 
-        if (!empty($filters['class_label'])) {
-            $query->join('anomalies', 'events.id', '=', 'anomalies.event_id');
-            $query->where('anomalies.class_label', $filters['class_label']);
-        }
 
         return $query->paginate($perPage, ['*'], 'page', $page)->toArray();
     }
@@ -68,7 +62,6 @@ class TurnRepository extends SharedRepositoryEloquent
         $query->whereBetween('turns.date_at', $filters['date']);
         $query->join('users', 'users.id', '=', 'turns.client_id');
         $query->join('turn_statuses', 'turn_statuses.id', '=', 'turns.status_id');
-        \Log::info($query->get()->toArray());
         return $query->get()->toArray();
     }
 
@@ -97,40 +90,56 @@ class TurnRepository extends SharedRepositoryEloquent
         $query = $this->entity->select(
             DB::raw("SUM(turns.payment) as total"),
         );
-
-        if (!empty($filters['date'])) {
-            $filters['date'] = explode(',', $filters['date']);
-            $query->whereBetween('turns.created_at', $filters['date']);
+        
+        if (!empty($filters['date_range'])) {
+            $query->whereBetween('turns.date_at', $filters['date_range']);
         } else {
             $query->whereBetween(
                 'date_at',
                 [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
             );
         }
+        if (!empty($filters['turn'])) {
+            $query->where('turns.time_at', $filters['turn']);
+        }
+        if (!empty($filters['clients'])) {
+            $query->whereIn('turns.client_id', explode(',', $filters['clients']));
+        }
 
         return $query->get()->toArray();
     }
     public function getTotals($filters)
     {
-        $query = $this->entity->select(
-            DB::raw('DAYNAME(turns.date_at) AS week_day'),
-            DB::raw('WEEKDAY(turns.date_at) as day'),
-            DB::raw("SUM(turns.payment) as count"),
-        );
-
-        // Filters
-        if (!empty($filters['date'])) {
-            $filters['date'] = explode(',', $filters['date']);
-            $query->whereBetween('turns.created_at', $filters['date']);
+        if (!empty($filters['date_range'])) {
+            $dateRange = explode(',', $filters['date_range']);
+            $start_at  = !empty($dateRange[0]) ? Carbon::parse($dateRange[0]) : Carbon::now();
+            $end_at    = !empty($dateRange[1]) ? Carbon::parse($dateRange[1]) : Carbon::now();
         } else {
-            $query->whereBetween(
-                'date_at',
-                [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-            );
+            $start_at = Carbon::now()->startOfWeek();
+            $end_at   = Carbon::now()->endOfWeek();
         }
 
-        return $query->orderBy('day')
-            ->groupBy(DB::raw('turns.date_at'))
+        $dateQuery = $start_at->isSameDay($end_at) ? "HOUR(turns.created_at) as date" : "DATE(turns.date_at) as date";
+
+        $query = $this->entity->select(DB::raw($dateQuery), DB::raw('SUM(turns.payment) as count'));
+
+        $query->whereBetween('turns.date_at', [$start_at, $end_at]);
+
+        if (!empty($filters['turn'])) {
+            $query->where('turns.time_at', $filters['turn']);
+        }
+        
+        if (!empty($filters['clients'])) {
+            $query->whereIn('turns.client_id', explode(',', $filters['clients']));
+        }
+
+       return $query->groupBy('date')
+            ->orderBy('date', 'asc')
             ->get();
+    }
+
+    public function findByDate($date)
+    {
+       return $this->entity->where('date_at', $date)->get();
     }
 }

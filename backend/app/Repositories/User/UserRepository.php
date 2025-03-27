@@ -2,12 +2,10 @@
 
 namespace App\Repositories\User;
 
-use Illuminate\Support\Str;
-use App\Mail\UserCreatedMail;
+
 use App\Models\Role;
 use App\Models\User;
 use App\Repositories\Shared\SharedRepositoryEloquent;
-use Illuminate\Support\Facades\Mail;
 
 class UserRepository extends SharedRepositoryEloquent
 {
